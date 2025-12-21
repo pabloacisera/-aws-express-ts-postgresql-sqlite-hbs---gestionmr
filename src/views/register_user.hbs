@@ -1,0 +1,44 @@
+<div class="container register-container w-50">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="register-container">
+                <h2 class="text-center mb-4">Crear Cuenta</h2>
+
+                <form id="register-form">
+                    <div class="mb-3">
+                        <label for="inputName" class="form-label">Nombre (Opcional)</label>
+                        <input type="text" class="form-control" id="inputName" name="name" aria-describedby="nameHelp">
+                        <div id="nameHelp" class="form-text">Tu nombre real o un alias.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inputEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="inputEmail" name="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="inputPassword" name="password" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="inputConfirmPassword" class="form-label">Confirmar Contraseña</label>
+                        <input type="password" class="form-control" id="inputConfirmPassword" name="confirmPassword"
+                            required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mb-3">Registrarse</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    ¿Ya tienes una cuenta?
+                    <a href="/login-user"
+                        class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">
+                        Inicia Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="module" src="/js/register-user.js"></script>

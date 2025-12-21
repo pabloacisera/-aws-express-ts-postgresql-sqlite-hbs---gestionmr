@@ -1,0 +1,204 @@
+{{! profile.hbs }}
+<link rel="stylesheet" href="/css/profile.css">
+
+<div class="container mt-5 profile-container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm profile-card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Mi Perfil
+                    </h3>
+                </div>
+                
+                <div class="card-body">
+                    {{#if userData}}
+                        {{! Input hidden para pasar datos a JavaScript }}
+                        <input type="hidden" id="user-data-json" value="{{json userData}}">
+                        
+                        {{! Mensajes de éxito/error }}
+                        {{#if success}}
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>{{success}}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {{/if}}
+                        
+                        {{#if error}}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>{{error}}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {{/if}}
+                        
+                        {{! Formulario de edición }}
+                        <form id="profileForm" action="/profile/update" method="POST">
+                            {{! Campo ID (oculto) }}
+                            <input type="hidden" name="id" value="{{userData.id}}">
+                            
+                            {{! Avatar/Foto de perfil }}
+                            <div class="text-center mb-4">
+                                <div class="avatar-container position-relative d-inline-block">
+                                    <img src="{{#if userData.avatar}}{{userData.avatar}}{{else}}https://ui-avatars.com/api/?name={{userData.name}}&background=007bff&color=fff&size=128{{/if}}" 
+                                         alt="Avatar" 
+                                         id="avatarPreview"
+                                         class="rounded-circle border border-3 border-primary avatar-preview">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-primary position-absolute bottom-0 end-0 rounded-circle avatar-edit-btn"
+                                            onclick="profileJS.openAvatarPicker()">
+                                        <i class="fas fa-camera"></i>
+                                    </button>
+                                    <input type="file" 
+                                           id="avatarInput" 
+                                           accept="image/*" 
+                                           class="d-none"
+                                           onchange="profileJS.handleAvatarChange(event)">
+                                </div>
+                                <p class="text-muted mt-2 small avatar-help">Haz clic en la cámara para cambiar tu foto</p>
+                            </div>
+                            
+                            {{! Información personal }}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label">
+                                        <i class="fas fa-user me-1"></i>Nombre completo
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           id="name" 
+                                           name="name" 
+                                           value="{{userData.name}}"
+                                           placeholder="Tu nombre completo"
+                                           required>
+                                    <div class="form-text">Cómo quieres que te llamemos</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">
+                                        <i class="fas fa-envelope me-1"></i>Correo electrónico
+                                    </label>
+                                    <input type="email" 
+                                           class="form-control form-control-lg" 
+                                           id="email" 
+                                           name="email" 
+                                           value="{{userData.email}}"
+                                           placeholder="tu@email.com"
+                                           required>
+                                    <div class="form-text">No compartiremos tu email con nadie</div>
+                                </div>
+                            </div>
+                            
+                            {{! Teléfono (si existe) }}
+                            {{#if userData.phone}}
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>Teléfono
+                                </label>
+                                <input type="tel" 
+                                       class="form-control form-control-lg" 
+                                       id="phone" 
+                                       name="phone" 
+                                       value="{{userData.phone}}"
+                                       placeholder="+34 600 000 000">
+                            </div>
+                            {{/if}}
+                            
+                            {{! Biografía/Descripción }}
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">
+                                    <i class="fas fa-edit me-1"></i>Biografía
+                                </label>
+                                <textarea class="form-control" 
+                                          id="bio" 
+                                          name="bio" 
+                                          rows="3" 
+                                          placeholder="Cuéntanos algo sobre ti..."
+                                          disabled
+                                          >{{userData.bio}}</textarea>
+                                <div class="form-text">Máximo 250 caracteres</div>
+                                <div class="text-end small">
+                                    <span id="bioCounter">0</span>/250
+                                </div>
+                            </div>
+                            
+                            {{! Información de cuenta (solo lectura) }}
+                            <div class="card bg-light mb-4 account-info-card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-info-circle me-1"></i>Información de cuenta
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong><i class="fas fa-id-card me-2"></i>ID de usuario:</strong><br>
+                                                <code>{{userData.id}}</code>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p class="mb-2">
+                                                <strong><i class="fas fa-calendar-alt me-2"></i>Miembro desde:</strong><br>
+                                                {{formatearFechaConHora userData.createdAt}}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {{! Botones de acción }}
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <button type="button" 
+                                        class="btn btn-outline-secondary me-md-2 reset-btn"
+                                        onclick="profileJS.resetForm()">
+                                    <i class="fas fa-undo me-1"></i>Restaurar
+                                </button>
+                                <button type="submit" class="btn btn-primary px-4 save-btn" disabled>
+                                    <i class="fas fa-save me-1"></i>Guardar cambios
+                                </button>
+                            </div>
+                        </form>
+                        
+                    {{else}}
+                        {{! Estado: no hay datos de usuario }}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="fas fa-user-slash fa-4x text-muted"></i>
+                            </div>
+                            <h4 class="mb-3">No se encontraron datos de usuario</h4>
+                            <p class="text-muted mb-4">Parece que no hay información de perfil disponible.</p>
+                            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                                <a href="/login" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Iniciar sesión
+                                </a>
+                                <a href="/" class="btn btn-outline-secondary">
+                                    <i class="fas fa-home me-1"></i>Volver al inicio
+                                </a>
+                            </div>
+                        </div>
+                    {{/if}}
+                </div>
+                
+                {{! Footer de la tarjeta }}
+                <!--{{#if userData}}
+                <div class="card-footer bg-light">
+                    <div class="row">
+                        <div class="col">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>Tu información está protegida
+                            </small>
+                        </div>
+                        <div class="col text-end">
+                            <a href="/profile/change-password" class="text-decoration-none small change-password-link">
+                                <i class="fas fa-key me-1"></i>Cambiar contraseña
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {{/if}}-->
+            </div>
+        </div>
+    </div>
+</div>
+
+<scrip type="module" src="/js/profile.js"></script>

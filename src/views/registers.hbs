@@ -1,0 +1,291 @@
+<link rel="stylesheet" href="/css/registers.css" />
+<div class="container mt-4">
+  {{#if data}}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Registros de Control</h2>
+    <button class="btn btn-primary" id="new_register" type="button">
+      <i class="bi bi-plus-circle"></i>
+      <span class="d-none d-md-inline">Nuevo Registro</span>
+      <span class="d-inline d-md-none">Nuevo</span>
+    </button>
+  </div>
+
+  {{#if pagination}}
+  <p class="text-muted">
+    <i class="bi bi-database me-2"></i>
+    Mostrando {{data.length}} de {{pagination.totalRecords}} registro(s)
+    <span class="mx-2">•</span>
+    Página {{pagination.currentPage}} de {{pagination.totalPages}}
+  </p>
+  {{else}}
+  <p class="text-muted">
+    <i class="bi bi-list-check me-2"></i>
+    Se encontraron {{data.length}} registro(s)
+  </p>
+  {{/if}}
+
+  <div class="row g-3">
+    {{#each data}}
+    <div class="col-12" data-register='{{json this}}' data-id="{{this.id}}">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <!-- ENCABEZADO MEJORADO -->
+          <div class="card-header-section">
+            <div class="card-title-wrapper">
+              <h5 class="card-title mb-0">{{this.conductor_nombre}}</h5>
+              <div class="badge-container">
+                <span class="badge bg-secondary">{{this.licencia_numero}}</span>
+
+                <!-- BADGE DE DOCUMENTOS -->
+                {{#if this.documentSummary.total}}
+                <span class="badge bg-success" title="Documentos cargados">
+                  <i class="bi bi-file-earmark-check me-1"></i>
+                  {{this.documentSummary.total}} docs
+                </span>
+                {{else}}
+                <span class="badge bg-warning" title="Sin documentos">
+                  <i class="bi bi-file-earmark-x me-1"></i>
+                  Sin docs
+                </span>
+                {{/if}}
+
+                <!-- BADGE DE FECHA -->
+                {{#if this.fecha}}
+                <span class="badge bg-info" title="Fecha del registro">
+                  <i class="bi bi-calendar3 me-1"></i>
+                  {{formatearFecha this.fecha}}
+                </span>
+                {{/if}}
+              </div>
+            </div>
+          </div>
+
+          <!-- INFORMACIÓN PRINCIPAL - DISPOSICIÓN GRID -->
+          <div class="info-grid">
+            <div class="info-item">
+              <i class="bi bi-building"></i>
+              <div class="info-content">
+                <span class="info-label">Empresa</span>
+                <span class="info-value">{{this.empresa_select}}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <i class="bi bi-truck"></i>
+              <div class="info-content">
+                <span class="info-label">Vehículo</span>
+                <span class="info-value">
+                  {{this.dominio}}
+                  {{#if this.interno}} • Interno: {{this.interno}}{{/if}}
+                </span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <i class="bi bi-geo-alt"></i>
+              <div class="info-content">
+                <span class="info-label">Ubicación</span>
+                <span class="info-value">{{this.lugar}}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <i class="bi bi-person-badge"></i>
+              <div class="info-content">
+                <span class="info-label">Agente</span>
+                <span class="info-value">{{this.agente}}</span>
+              </div>
+            </div>
+          </div>
+
+          {{!-- SECCIÓN DE DOCUMENTOS MEJORADA --}}
+          {{#if this.documentSummary.total}}
+          <div class="documents-section">
+            <div class="documents-header">
+              <h6 class="documents-title">
+                <i class="bi bi-files"></i>
+                Documentos Adjuntos
+                <span class="documents-count">{{this.documentSummary.total}}</span>
+              </h6>
+            </div>
+
+            <div class="documents-grid">
+              {{#each this.certificates}}
+              <!-- CAMBIO IMPORTANTE: RESTAURAR <a> EN VEZ DE <button> -->
+              <a href="/api/cert/{{this.id}}/preview" target="_blank" class="document-action document-card"
+                data-certificate-id="{{this.id}}" data-certificate-type="{{this.certificateType}}"
+                data-control-id="{{../this.id}}" data-full-title="{{this.fileName}} - {{formatearFechaConHora this.uploadedAt}}" title="Haz clic para ver {{formatearFechaConHora this.uploadedAt}}">
+                <div class="document-info">
+                  <div class="document-type">
+                    {{#if (eq this.certificateType 'C_MATRICULACION')}}
+                    📄 Matriculación
+                    {{else if (eq this.certificateType 'SEGURO')}}
+                    🛡️ Seguro
+                    {{else if (eq this.certificateType 'RTO')}}
+                    📋 RTO
+                    {{else if (eq this.certificateType 'TACOGRAFO')}}
+                    📊 Tacógrafo
+                    {{else}}
+                    📎 {{this.certificateType}}
+                    {{/if}}
+                  </div>
+                  <div class="document-date">
+                    {{formatearFecha this.uploadedAt}}
+                  </div>
+                </div>
+                <i class="bi bi-eye document-action-icon"></i>
+              </a>
+              {{/each}}
+            </div>
+
+            {{#if this.documentSummary.latestDocument}}
+            <div class="document-summary">
+              <small>
+                <i class="bi bi-clock-history"></i>
+                Última actualización: {{formatearFechaConHora this.documentSummary.latestDocument.uploadedAt}}
+              </small>
+            </div>
+            {{/if}}
+          </div>
+          {{/if}}
+
+          <!-- BOTONES DE ACCIÓN - DISEÑO MEJORADO -->
+          <div class="actions-grid">
+            <button class="btn btn-success btn-action action-btn" data-action="show-canvas" data-id="{{this.id}}">
+              <i class="bi bi-eye-fill"></i>
+              <span>Ver Detalles</span>
+            </button>
+
+            <button class="btn btn-warning btn-action action-btn" data-action="download-pdf" data-id="{{this.id}}">
+              <i class="bi bi-file-pdf-fill"></i>
+              <span>Descargar PDF</span>
+            </button>
+
+            <button class="btn btn-primary btn-action action-btn" data-action="documentation" data-id="{{this.id}}">
+              <i class="bi bi-folder-fill"></i>
+              <span>Gestionar Docs</span>
+              {{#if this.documentSummary.total}}
+              <span class="badge bg-light text-dark ms-1">
+                {{this.documentSummary.total}}
+              </span>
+              {{/if}}
+            </button>
+
+            <button class="btn btn-danger btn-action action-btn" data-action="delete" data-id="{{this.id}}">
+              <i class="bi bi-trash-fill"></i>
+              <span>Eliminar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{/each}}
+  </div>
+
+  <!-- PAGINACIÓN MEJORADA -->
+  {{#if pagination}}
+  <div class="pagination-container">
+    <nav aria-label="Paginación de registros">
+      <ul class="pagination justify-content-center">
+        <!-- Botón Primera página -->
+        <li class="page-item {{#unless pagination.hasPreviousPage}}disabled{{/unless}}">
+          <a class="page-link" href="/registers?page=1" aria-label="Primera">«</a>
+        </li>
+
+        <!-- Botón Anterior -->
+        <li class="page-item {{#unless pagination.hasPreviousPage}}disabled{{/unless}}">
+          <a class="page-link"
+            href="/registers?page={{#if pagination.hasPreviousPage}}{{math pagination.currentPage '-' 1}}{{else}}1{{/if}}"
+            aria-label="Anterior">‹</a>
+        </li>
+
+        <!-- Página actual -->
+        <li class="page-item active">
+          <span class="page-link">
+            {{pagination.currentPage}} / {{pagination.totalPages}}
+          </span>
+        </li>
+
+        <!-- Botón Siguiente -->
+        <li class="page-item {{#unless pagination.hasNextPage}}disabled{{/unless}}">
+          <a class="page-link"
+            href="/registers?page={{#if pagination.hasNextPage}}{{math pagination.currentPage '+' 1}}{{else}}{{pagination.totalPages}}{{/if}}"
+            aria-label="Siguiente">›</a>
+        </li>
+
+        <!-- Botón Última página -->
+        <li class="page-item {{#unless pagination.hasNextPage}}disabled{{/unless}}">
+          <a class="page-link" href="/registers?page={{pagination.totalPages}}" aria-label="Última">»</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  {{/if}}
+
+  {{else}}
+  <!-- ESTADO VACÍO MEJORADO -->
+  <div class="empty-state">
+    <div class="d-grid gap-2 d-md-block mb-4">
+      <button class="btn btn-primary btn-lg" id="new_register" type="button">
+        <i class="bi bi-plus-circle"></i>
+        Crear Primer Registro
+      </button>
+    </div>
+    <div class="alert alert-info" role="alert">
+      <i class="bi bi-inbox display-4 mb-3"></i>
+      <h4 class="alert-heading">No hay registros aún</h4>
+      <p>Comienza creando tu primer registro de control.</p>
+    </div>
+  </div>
+  {{/if}}
+</div>
+
+<!-- Modal de Eliminación -->
+<div class="delete-modal" id="deleteModal">
+  <div class="delete-modal-content">
+    <h3>¿Eliminar registro?</h3>
+    <p>Esta acción no se puede deshacer.</p>
+
+    <div class="delete-modal-actions">
+      <button class="btn btn-secondary" id="cancelDelete">Cancelar</button>
+      <button class="btn btn-danger" id="confirmDelete">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+
+<script type="module" src="/js/registers.js"></script>
+<script>
+let selectedId = null;
+
+// Delegación de eventos para todos los botones con data-action="delete"
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action='delete']");
+    if (!btn) return;
+
+    selectedId = btn.dataset.id;
+    document.getElementById("deleteModal").style.display = "flex";
+});
+
+// Botón cancelar del modal
+document.getElementById("cancelDelete").addEventListener("click", () => {
+    document.getElementById("deleteModal").style.display = "none";
+});
+
+// Botón confirmar del modal
+document.getElementById("confirmDelete").addEventListener("click", async () => {
+    if (!selectedId) return;
+
+    const res = await fetch(`/api/registers-control/${selectedId}`, {
+        method: "DELETE"
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        window.location.reload();
+    } else {
+        alert("Error: " + data.message);
+    }
+});
+</script>

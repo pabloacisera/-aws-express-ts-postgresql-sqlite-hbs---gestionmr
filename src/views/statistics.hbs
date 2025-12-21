@@ -1,0 +1,225 @@
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="/css/statistics.css">
+
+<div id="statsData" data-stats='{{{json stats}}}' style="display: none;"></div>
+
+<div class="container-fluid py-4">
+
+    {{!-- Cambiar el título principal para que use h2 en vez de display-5 --}}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-2">
+                <i class="fas fa-chart-bar me-2"></i>Panel de Estadísticas
+            </h2>
+            <p class="text-muted mb-4">Resumen completo de tus registros y vencimientos</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h4 class="section-title">
+                    <i class="fas fa-clipboard-check me-2"></i>Estado General
+                </h4>
+                <div class="alert alert-{{#if (eq stats.resumenVencimientos.estado 'critico')}}danger
+                                          {{else if (eq stats.resumenVencimientos.estado 'advertencia')}}warning
+                                          {{else}}success{{/if}}">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-{{#if (eq stats.resumenVencimientos.estado 'critico')}}exclamation-triangle
+                                            {{else if (eq stats.resumenVencimientos.estado 'advertencia')}}exclamation-circle
+                                            {{else}}check-circle{{/if}} fa-2x me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">
+                                {{#if (eq stats.resumenVencimientos.estado 'critico')}}
+                                ¡Atención! Existen certificados vencidos
+                                {{else if (eq stats.resumenVencimientos.estado 'advertencia')}}
+                                Hay certificados próximos a vencer
+                                {{else}}
+                                Todo está al día
+                                {{/if}}
+                            </h5>
+                            <p class="mb-0">
+                                {{#if (eq stats.resumenVencimientos.estado 'critico')}}
+                                Es importante que se registre y renueven los certificados vencidos lo antes posible.
+                                {{else if (eq stats.resumenVencimientos.estado 'advertencia')}}
+                                Revisa los certificados que están próximos a vencer para mantener todo al día.
+                                {{else}}
+                                ¡Excelente trabajo! Todos los certificados están actualizados.
+                                {{/if}}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Resumen -->
+    <div class="row mb-4 mt-4">
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-clipboard-list stat-icon"></i>
+                            <h6 class="text-uppercase mt-3">Registros Totales</h6>
+                            <h2 class="stat-number">{{stats.totalRegistries}}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-clock stat-icon"></i>
+                            <h6 class="text-uppercase mt-3">Próximos a Vencer</h6>
+                            <h2 class="stat-number">{{stats.resumenVencimientos.totalProximos}}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-exclamation-triangle stat-icon"></i>
+                            <h6 class="text-uppercase mt-3">Vencidos</h6>
+                            <h2 class="stat-number">{{stats.resumenVencimientos.totalVencidos}}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file-pdf stat-icon"></i>
+                            <h6 class="text-uppercase mt-3">Documentos</h6>
+                            <h2 class="stat-number">{{stats.documentos.total}}</h2>
+                            <small>{{stats.documentos.espacioTotalMB}} MB</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos y Estadísticas Detalladas -->
+    <div class="row">
+        <!-- Gráfico de Registros por Mes -->
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h4 class="section-title">
+                    <i class="fas fa-chart-line me-2"></i>Registros por Mes
+                </h4>
+                <canvas id="registriesChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Distribución de Documentos -->
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h4 class="section-title">
+                    <i class="fas fa-file me-2"></i>Distribución de Documentos
+                </h4>
+                <canvas id="documentsChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalles de Vencimientos -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h4 class="section-title">
+                    <i class="fas fa-calendar-times me-2"></i>Detalle de Vencimientos
+                </h4>
+                <div class="row">
+                    {{#each stats.vencimientos}}
+                    {{#each this}}
+                    {{#if (gt this 0)}}
+                    <div class="col-md-4 mb-3">
+                        <a href="/stats/detail/vencimiento/{{@key}}/{{@../key}}" class="text-decoration-none">
+                            <div class="card vencimiento-card 
+                                    {{#if (gt this 0)}}
+                                        {{#if (eq @../key "proximos")}}vencimiento-proximo{{else}}vencimiento-vencido{{/if}}
+                                    {{else}}vencimiento-bueno{{/if}} hover-card">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        {{#if (eq @key "licencia")}}Licencia
+                                        {{else if (eq @key "c_matriculacion")}}C. Matriculación
+                                        {{else if (eq @key "seguro")}}Seguro
+                                        {{else if (eq @key "rto")}}RTO
+                                        {{else if (eq @key "tacografo")}}Tacógrafo{{/if}}
+                                    </h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge 
+                                                {{#if (gt this 0)}}
+                                                    {{#if (eq @../key "proximos")}}bg-warning{{else}}bg-danger{{/if}}
+                                                {{else}}bg-success{{/if}}">
+                                            {{#if (eq @../key "proximos")}}Próximos{{else}}Vencidos{{/if}}
+                                        </span>
+                                        <div>
+                                            <h4 class="mb-0">{{this}}</h4>
+                                            <small class="text-muted">Hacer clic para ver detalle</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {{/if}}
+                    {{/each}}
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Empresas y Lugares -->
+    <div class="row mt-4">
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h4 class="section-title">
+                    <i class="fas fa-building me-2"></i>Top Empresas
+                </h4>
+                <div class="list-group">
+                    {{#each stats.distribuciones.empresas}}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        {{empresa_select}}
+                        <span class="badge bg-primary rounded-pill">{{_count}}</span>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h4 class="section-title">
+                    <i class="fas fa-map-marker-alt me-2"></i>Top Lugares
+                </h4>
+                <div class="list-group">
+                    {{#each stats.distribuciones.lugares}}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        {{lugar}}
+                        <span class="badge bg-success rounded-pill">{{_count}}</span>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="module" src="/js/statistics.js"></script>

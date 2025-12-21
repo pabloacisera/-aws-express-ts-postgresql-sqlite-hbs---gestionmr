@@ -1,0 +1,357 @@
+/* doc_register.css - COHERENCIA CON REGISTERS.HBS */
+
+/* Contenedor principal - mismo estilo que registers */
+.container.mt-4 {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem !important;
+  width: 100%;
+
+  margin: 2rem auto 1rem auto; /* Margen superior e inferior consistente */
+  border: 1px solid #dee2e6;
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Animación suave */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header - proporciones iguales a registers */
+.container.mt-4 .header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.container.mt-4 .header h2 {
+  color: #212529;
+  font-size: 1.5rem !important;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.container.mt-4 .header .text-muted {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+/* Status badge - mismo estilo que badges en registers */
+.container.mt-4 .status-badge {
+  display: inline-block;
+  padding: 0.375rem 1rem;
+  border-radius: 50px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.container.mt-4 .status-complete {
+  background-color: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.container.mt-4 .status-incomplete {
+  background-color: #f8d7da;
+  color: #842029;
+  border: 1px solid #f5c2c7;
+}
+
+/* Sección de campos faltantes - similar a card sections */
+.container.mt-4 .missing-fields-section {
+  background: #fff3cd;
+  border: 1px solid #ffecb5;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.container.mt-4 .missing-title {
+  color: #856404;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.container.mt-4 .missing-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.container.mt-4 .missing-item {
+  padding: 0.25rem 0;
+  color: #856404;
+  border-bottom: 1px solid #ffecb5;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.container.mt-4 .missing-item:last-child {
+  border-bottom: none;
+}
+
+/* Grid de certificados - similar a info-grid de registers */
+.container.mt-4 .cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Tarjetas de certificado - mismas proporciones que cards de registers */
+.container.mt-4 .cert-card {
+  background: white;
+  border-radius: 6px;
+  padding: 1.25rem !important;
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.container.mt-4 .cert-card.enabled {
+  border-color: #0d6efd;
+  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.1);
+}
+
+.container.mt-4 .cert-card.disabled {
+  border-color: #dee2e6;
+  background: #f8f9fa;
+  opacity: 0.9;
+}
+
+.container.mt-4 .cert-card.enabled:hover {
+  border-color: #0d6efd;
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Header de certificado - estilo similar a card-title-wrapper */
+.container.mt-4 .cert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.container.mt-4 .cert-title {
+  font-size: 1rem !important;
+  font-weight: 600;
+  color: #212529;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.container.mt-4 .cert-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.container.mt-4 .cert-icon.enabled {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.container.mt-4 .cert-icon.disabled {
+  background-color: #adb5bd;
+  color: white;
+}
+
+/* Descripción - tamaño de fuente proporcional */
+.container.mt-4 .cert-description {
+  color: #6c757d;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+/* Input de archivo - estilo consistente */
+.container.mt-4 .cert-file-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.85rem;
+  color: #495057;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+}
+
+.container.mt-4 .cert-file-input:not(:disabled):hover {
+  border-color: #0d6efd;
+  background: #f8f9fa;
+}
+
+.container.mt-4 .cert-file-input:disabled {
+  cursor: not-allowed;
+  background: #f8f9fa;
+  color: #adb5bd;
+}
+
+.container.mt-4 .cert-file-input:not(:disabled):focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* Status de certificado - similar a badges */
+.container.mt-4 .cert-status {
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.container.mt-4 .status-available {
+  background-color: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.container.mt-4 .status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffecb5;
+}
+
+/* Acciones del formulario */
+.container.mt-4 .form-actions {
+  margin-top: 2rem;
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.container.mt-4 .submit-btn {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.container.mt-4 .submit-btn:hover {
+  background-color: #0b5ed7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(11, 94, 215, 0.2);
+}
+
+.container.mt-4 .submit-btn:active {
+  transform: translateY(0);
+}
+
+.container.mt-4 .submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background-color: #6c757d;
+}
+
+/* Footer info - tamaño proporcional */
+.container.mt-4 .footer-info {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+.container.mt-4 .footer-info strong {
+  color: #212529;
+}
+
+.container.mt-4 .footer-info p {
+  margin-bottom: 0.25rem;
+}
+
+/* Barra de progreso - mantener existente pero ajustar proporciones */
+.container.mt-4 .progress-container {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  margin-bottom: 1.5rem;
+}
+
+.container.mt-4 .progress-text {
+  font-size: 0.9rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.container.mt-4 .progress-percent {
+  font-weight: 600;
+  color: #0d6efd;
+}
+
+.container.mt-4 .progress-count {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+/* Estados de archivos seleccionados */
+.container.mt-4 .cert-status.status-selected {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+/* Responsive - igual que registers */
+@media (max-width: 768px) {
+  .container.mt-4 {
+    padding: 1rem !important;
+    margin: 1rem auto;
+  }
+
+  .container.mt-4 .cert-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .container.mt-4 .header h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  .container.mt-4 .submit-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    width: 100%;
+  }
+}
+
+/* Ajustes para pantallas grandes */
+@media (min-width: 1200px) {
+  .container.mt-4 .cert-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

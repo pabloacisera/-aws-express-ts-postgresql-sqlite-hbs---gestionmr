@@ -1,0 +1,195 @@
+<link rel="stylesheet" href="/css/doc_register.css">
+
+<input type="hidden" id="control-id" value="{{controlId}}" />
+
+<div class="container mt-4"> <!-- AGREGAR mt-4 AQUÍ -->
+    {{!-- Agregar un header más coherente --}}
+    <div class="mb-4">
+        <h2>Documentación del Registro</h2>
+        <p class="text-muted">Gestión de certificados para el control ID: {{controlId}}</p>
+    </div>
+    <!-- Estado general -->
+    {{#if statusCertificates.allComplete}}
+    <div class="status-badge status-complete mb-1">
+        ✅ Todos los certificados están completos
+    </div>
+    {{else}}
+    <div class="status-badge status-incomplete mb-1">
+        ⚠️ Faltan {{statusCertificates.missingFields.length}} certificado(s)
+    </div>
+    {{/if}}
+
+    <!-- Lista de certificados pendientes -->
+    {{#unless statusCertificates.allComplete}}
+    <div class="missing-fields-section mb-1">
+        <div class="missing-title">
+            <span>📋 Certificados pendientes:</span>
+        </div>
+        <ul class="missing-list mb-1">
+            {{#each statusCertificates.missingFields}}
+            <li class="missing-item">• {{this}}</li>
+            {{/each}}
+        </ul>
+    </div>
+    {{/unless}}
+
+    <form id="certificates-form" action="/api/certificates/upload" method="POST" enctype="multipart/form-data">
+        <div class="cert-grid">
+            <!-- Los 4 certificados se renderizan dinámicamente según los booleanos -->
+
+            <!-- Certificado de Matriculación -->
+            {{#if statusCertificates.c_matriculacion_cert}}
+            <!-- VERSIÓN HABILITADA -->
+            <div class="cert-card enabled">
+                <div class="cert-header">
+                    <div class="cert-title">📋 Certificado de Matriculación</div>
+                    <div class="cert-icon enabled">✓</div>
+                </div>
+                <p class="cert-description">
+                    Documento oficial que acredita la matriculación del vehículo.
+                </p>
+                <input type="file" name="doc_c_matriculacion_cert" id="doc_c_matriculacion_cert"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" required>
+                <div class="cert-status status-available">
+                    ✅ Disponible para subir
+                </div>
+            </div>
+            {{else}}
+            <!-- VERSIÓN DESHABILITADA -->
+            <div class="cert-card disabled">
+                <div class="cert-header">
+                    <div class="cert-title">📋 Certificado de Matriculación</div>
+                    <div class="cert-icon disabled">✗</div>
+                </div>
+                <p class="cert-description">
+                    Documento oficial que acredita la matriculación del vehículo.
+                </p>
+                <input type="file" name="doc_c_matriculacion_cert" id="doc_c_matriculacion_cert"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" disabled>
+                <div class="cert-status status-pending">
+                    ⏳ Pendiente de habilitación
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Certificado de Seguro -->
+            {{#if statusCertificates.seguro_cert}}
+            <!-- VERSIÓN HABILITADA -->
+            <div class="cert-card enabled">
+                <div class="cert-header">
+                    <div class="cert-title">🛡️ Certificado de Seguro</div>
+                    <div class="cert-icon enabled">✓</div>
+                </div>
+                <p class="cert-description">
+                    Póliza de seguro vigente del vehículo con cobertura completa.
+                </p>
+                <input type="file" name="doc_seguro_cert" id="doc_seguro_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    class="cert-file-input" required>
+                <div class="cert-status status-available">
+                    ✅ Disponible para subir
+                </div>
+            </div>
+            {{else}}
+            <!-- VERSIÓN DESHABILITADA -->
+            <div class="cert-card disabled">
+                <div class="cert-header">
+                    <div class="cert-title">🛡️ Certificado de Seguro</div>
+                    <div class="cert-icon disabled">✗</div>
+                </div>
+                <p class="cert-description">
+                    Póliza de seguro vigente del vehículo con cobertura completa.
+                </p>
+                <input type="file" name="doc_seguro_cert" id="doc_seguro_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    class="cert-file-input" disabled>
+                <div class="cert-status status-pending">
+                    ⏳ Pendiente de habilitación
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Certificado RTO -->
+            {{#if statusCertificates.rto_cert}}
+            <!-- VERSIÓN HABILITADA -->
+            <div class="cert-card enabled">
+                <div class="cert-header">
+                    <div class="cert-title">🚗 Certificado RTO</div>
+                    <div class="cert-icon enabled">✓</div>
+                </div>
+                <p class="cert-description">
+                    Certificado de Registro de Transporte de Oficina (RTO).
+                </p>
+                <input type="file" name="doc_rto_cert" id="doc_rto_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    class="cert-file-input" required>
+                <div class="cert-status status-available">
+                    ✅ Disponible para subir
+                </div>
+            </div>
+            {{else}}
+            <!-- VERSIÓN DESHABILITADA -->
+            <div class="cert-card disabled">
+                <div class="cert-header">
+                    <div class="cert-title">🚗 Certificado RTO</div>
+                    <div class="cert-icon disabled">✗</div>
+                </div>
+                <p class="cert-description">
+                    Certificado de Registro de Transporte de Oficina (RTO).
+                </p>
+                <input type="file" name="doc_rto_cert" id="doc_rto_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    class="cert-file-input" disabled>
+                <div class="cert-status status-pending">
+                    ⏳ Pendiente de habilitación
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- Certificado de Tacógrafo -->
+            {{#if statusCertificates.tacografo_cert}}
+            <!-- VERSIÓN HABILITADA -->
+            <div class="cert-card enabled">
+                <div class="cert-header">
+                    <div class="cert-title">📊 Certificado de Tacógrafo</div>
+                    <div class="cert-icon enabled">✓</div>
+                </div>
+                <p class="cert-description">
+                    Certificado de calibración y funcionamiento del tacógrafo.
+                </p>
+                <input type="file" name="doc_tacografo_cert" id="doc_tacografo_cert"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" required>
+                <div class="cert-status status-available">
+                    ✅ Disponible para subir
+                </div>
+            </div>
+            {{else}}
+            <!-- VERSIÓN DESHABILITADA -->
+            <div class="cert-card disabled">
+                <div class="cert-header">
+                    <div class="cert-title">📊 Certificado de Tacógrafo</div>
+                    <div class="cert-icon disabled">✗</div>
+                </div>
+                <p class="cert-description">
+                    Certificado de calibración y funcionamiento del tacógrafo.
+                </p>
+                <input type="file" name="doc_tacografo_cert" id="doc_tacografo_cert"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" disabled>
+                <div class="cert-status status-pending">
+                    ⏳ Pendiente de habilitación
+                </div>
+            </div>
+            {{/if}}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="submit-btn" id="submit-btn">
+                <span>📤 Subir Documentos</span>
+                <span>→</span>
+            </button>
+        </div>
+    </form>
+
+    <div class="footer-info">
+        Estado: <strong>{{#if statusCertificates.allComplete}}Completo{{else}}Incompleto{{/if}}</strong></p>
+        <p>Formatos aceptados: PDF, JPG, PNG, DOC, DOCX (Máx. 10MB por archivo)</p>
+    </div>
+</div>
+
+<script type="module" src="/js/doc_register.js"></script>

@@ -1,0 +1,323 @@
+/* registers.css - SOLO ESTILOS PARA TARJETAS DE REGISTROS */
+
+/* 1. Estilos específicos para tarjetas dentro de .container.mt-4 */
+.container.mt-4 .col-12 {
+  margin-bottom: 1.5rem;
+}
+
+/* 2. Mejorar tarjetas sin afectar layout */
+.container.mt-4 .card.shadow-sm {
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease;
+}
+
+.container.mt-4 .card.shadow-sm:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.container.mt-4 .card-body {
+  padding: 1.5rem !important;
+}
+
+/* 3. Estructura interna de tarjetas */
+.container.mt-4 .card-header-section {
+  margin-bottom: 1rem;
+}
+
+.container.mt-4 .card-title-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.container.mt-4 .card-title.mb-0 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.container.mt-4 .badge-container {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* 4. Grid de información */
+.container.mt-4 .info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.container.mt-4 .info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.container.mt-4 .info-item i {
+  color: #6c757d;
+  font-size: 1rem;
+  margin-top: 0.1rem;
+}
+
+.container.mt-4 .info-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.container.mt-4 .info-value {
+  font-size: 0.95rem;
+  color: #212529;
+}
+
+/* 5. Sección de documentos */
+.container.mt-4 .documents-section {
+  margin: 1.5rem 0;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.container.mt-4 .documents-header {
+  margin-bottom: 1rem;
+}
+
+.container.mt-4 .documents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.documents-grid a {
+  text-decoration: none;
+}
+
+.container.mt-4 .document-card {
+  padding: 0.75rem;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.container.mt-4 .document-card:hover {
+  border-color: #3498db;
+  background: #f8f9fa;
+}
+
+.container.mt-4 .document-type {
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.container.mt-4 .document-date {
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+/* 6. Botones de acción */
+.container.mt-4 .actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.container.mt-4 .action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+/* 7. PAGINACIÓN MEJORADA */
+.container.mt-4 .pagination-container {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+/* Estilos específicos para la lista de paginación */
+.container.mt-4 .pagination {
+  margin-bottom: 0;
+  gap: 0.25rem;
+}
+
+/* Todos los items de página */
+.container.mt-4 .pagination .page-item {
+  margin: 0;
+}
+
+/* Enlaces y spans de página */
+.container.mt-4 .pagination .page-link {
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+  min-width: 42px;
+  min-height: 42px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Hover en enlaces */
+.container.mt-4 .pagination .page-link:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+/* Página activa */
+.container.mt-4 .pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+  font-weight: 600;
+  min-width: auto;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+}
+
+/* Items deshabilitados */
+.container.mt-4 .pagination .page-item.disabled .page-link {
+  color: #adb5bd;
+  pointer-events: none;
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  cursor: not-allowed;
+}
+
+/* Iconos dentro de los enlaces */
+.container.mt-4 .pagination .page-link i {
+  font-size: 1rem;
+  font-style: normal;
+  line-height: 1;
+}
+
+/* FALLBACK: Mostrar símbolos si Bootstrap Icons falla */
+.container.mt-4
+  .pagination
+  .page-link
+  i.bi-chevron-double-left:not(.bi)::before,
+.container.mt-4 .pagination .page-link i.bi-chevron-double-left:empty::before {
+  content: "«";
+  font-family: Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.container.mt-4 .pagination .page-link i.bi-chevron-left:not(.bi)::before,
+.container.mt-4 .pagination .page-link i.bi-chevron-left:empty::before {
+  content: "‹";
+  font-family: Arial, sans-serif;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.container.mt-4 .pagination .page-link i.bi-chevron-right:not(.bi)::before,
+.container.mt-4 .pagination .page-link i.bi-chevron-right:empty::before {
+  content: "›";
+  font-family: Arial, sans-serif;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.container.mt-4
+  .pagination
+  .page-link
+  i.bi-chevron-double-right:not(.bi)::before,
+.container.mt-4 .pagination .page-link i.bi-chevron-double-right:empty::before {
+  content: "»";
+  font-family: Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* 8. Estado vacío */
+.container.mt-4 .empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+/* 9. Responsive */
+@media (max-width: 768px) {
+  .container.mt-4 .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container.mt-4 .documents-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .container.mt-4 .actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Paginación más compacta en móvil */
+  .container.mt-4 .pagination .page-link {
+    padding: 0.4rem 0.6rem;
+    min-width: 36px;
+    font-size: 0.875rem;
+  }
+
+  .container.mt-4 .pagination .page-item.active .page-link {
+    padding: 0.4rem 0.75rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .container.mt-4 .actions-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/*
+* ESTILOS DEL MODAL
+*/
+/* === MODAL DE ELIMINACIÓN — AISLADO === */
+
+#deleteModal.delete-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.delete-modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+}
+
+.delete-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}

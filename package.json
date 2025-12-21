@@ -1,0 +1,52 @@
+{
+  "name": "backend-express",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx --watch src/app.ts",
+    "start": "node dist/app.js",
+    "build": "tsc && npm run copy-assets",
+    "copy-assets": "cp -r src/views dist/ && cp -r public dist/ && cp -r uploads dist/ 2>/dev/null || true",
+    "prisma:migrate": "npx prisma migrate --dev",
+    "prisma:generate": "npx prisma generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/better-sqlite3": "7.6.13",
+    "bcrypt": "6.0.0",
+    "better-sqlite3": "12.5.0",
+    "cloudinary": "1.41.3",
+    "cookie-parser": "1.4.7",
+    "cors": "2.8.5",
+    "dotenv": "17.2.3",
+    "express": "5.2.1",
+    "express-handlebars": "8.0.4",
+    "jsonwebtoken": "9.0.3",
+    "morgan": "1.10.1",
+    "multer": "2.0.2",
+    "multer-storage-cloudinary": "4.0.0",
+    "node-mailjet": "6.0.11",
+    "pdfkit": "0.17.2"
+  },
+  "devDependencies": {
+    "@prisma/client": "6.19.0",
+    "@types/bcrypt": "6.0.0",
+    "@types/cookie-parser": "1.4.10",
+    "@types/cors": "2.8.19",
+    "@types/dotenv": "6.1.1",
+    "@types/express": "5.0.6",
+    "@types/jsonwebtoken": "9.0.10",
+    "@types/morgan": "1.9.10",
+    "@types/multer": "2.0.0",
+    "@types/node": "24.10.1",
+    "@types/node-mailjet": "3.3.12",
+    "@types/pdfkit": "0.17.4",
+    "prisma": "6.19.0",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,50 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center bg-warning">
+                    <h3>⚠️ Activación Pendiente</h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107"
+                            class="bi bi-envelope-exclamation-fill" viewBox="0 0 16 16">
+                            <path
+                                d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.026A2 2 0 0 0 2 14h6.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.606-3.446l-.367-.225L8 9.586l-1.239-.757ZM16 4.697v4.974A4.491 4.491 0 0 0 12.5 8a4.49 4.49 0 0 0-1.965.45l-.338-.207L16 4.697Z" />
+                            <path
+                                d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1.5a.5.5 0 0 1-1 0V11a.5.5 0 0 1 1 0Zm0 3a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0Z" />
+                        </svg>
+                    </div>
+
+                    <h4 class="mb-3">¡Estás a un paso!</h4>
+                    <p class="lead">{{message}}</p>
+
+                    {{#if email}}
+                    <div class="alert alert-info mt-3">
+                        <p class="mb-0">Hemos enviado un correo de activación a: <strong>{{email}}</strong></p>
+                        <p class="mb-0 mt-2">Por favor, revisa tu bandeja de entrada (y carpeta de spam).</p>
+                    </div>
+                    {{/if}}
+
+                    <div class="mt-4">
+                        <a href="/resend-activation{{#if email}}?email={{email}}{{/if}}"
+                            class="btn btn-warning btn-lg">Reenviar Correo de Activación</a>
+                        <a href="/" class="btn btn-outline-secondary btn-lg ms-2">Volver al Inicio</a>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="text-start">
+                        <h5>¿No recibiste el correo?</h5>
+                        <ul>
+                            <li>Revisa tu carpeta de <strong>spam</strong> o <strong>correo no deseado</strong></li>
+                            <li>Asegúrate de haber ingresado el correo correctamente: <strong>{{email}}</strong></li>
+                            <li>Espera unos minutos, a veces el correo puede tardar</li>
+                            <li>Si el problema persiste, intenta con un correo diferente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

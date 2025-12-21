@@ -1,0 +1,120 @@
+# ===========================================
+# CONFIGURACIÓN PARA DESARROLLO LOCAL
+# ===========================================
+localhost:8080 {
+	#    API Django (endpoints /api/*)
+	#    handle /api/* {
+	#        reverse_proxy localhost:8000
+	#    }
+
+	#   Archivos estáticos (CSS, JS, imágenes, fuentes, etc.)
+	handle /css/* {
+		root * ./public
+		file_server
+	}
+
+	handle /js/* {
+		root * ./public
+		file_server
+	}
+
+	handle /images/* {
+		root * ./public
+		file_server
+	}
+
+	handle /fonts/* {
+		root * ./public
+		file_server
+	}
+
+	handle /assets/* {
+		root * ./public
+		file_server
+	}
+
+	# Todo lo demás (rutas HTML) va a Express con Handlebars
+	handle {
+		reverse_proxy localhost:3000
+	}
+
+	# Logs para debugging
+	log {
+		output file ./logs/access.log
+		format console
+	}
+}
+
+# ===========================================
+# CONFIGURACIÓN PARA PRODUCCIÓN CON HTTPS
+# ===========================================
+# Descomenta y edita esto cuando tengas un dominio real
+# tudominio.com {
+#     # Caddy automáticamente obtiene certificados Let's Encrypt
+#     
+#     # API Django
+#     handle /api/* {
+#         reverse_proxy localhost:8000
+#     }
+#     
+#     # Archivos estáticos
+#     handle /css/* {
+#         root * ./public
+#         file_server
+#     }
+#     
+#     handle /js/* {
+#         root * ./public
+#         file_server
+#     }
+#     
+#     handle /images/* {
+#         root * ./public
+#         file_server
+#     }
+#     
+#     handle /fonts/* {
+#         root * ./public
+#         file_server
+#     }
+#     
+#     handle /assets/* {
+#         root * ./public
+#         file_server
+#     }
+#     
+#     # Express con Handlebars (solo renderizado HTML)
+#     handle {
+#         reverse_proxy localhost:3000
+#     }
+#     
+#     # Redirección de www a no-www
+#     @www host www.tudominio.com
+#     redir @www https://tudominio.com{uri} permanent
+#     
+#     # Headers de seguridad
+#     header {
+#         # Habilitar HSTS
+#         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+#         # Prevenir clickjacking
+#         X-Frame-Options "SAMEORIGIN"
+#         # Prevenir MIME type sniffing
+#         X-Content-Type-Options "nosniff"
+#         # XSS Protection
+#         X-XSS-Protection "1; mode=block"
+#         # Política de referrer
+#         Referrer-Policy "strict-origin-when-cross-origin"
+#     }
+#     
+#     # Compresión automática
+#     encode gzip zstd
+#     
+#     # Logs
+#     log {
+#         output file ./logs/access.log {
+#             roll_size 100mb
+#             roll_keep 5
+#             roll_keep_for 720h
+#         }
+#     }
+# }

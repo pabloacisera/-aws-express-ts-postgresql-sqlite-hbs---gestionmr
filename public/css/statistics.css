@@ -1,0 +1,203 @@
+/* statistics.css - COHERENCIA CON REGISTERS.HBS */
+
+/* Contenedor principal igual que registers */
+.container-fluid.py-4 {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+
+/* Títulos consistentes */
+.container-fluid.py-4 .display-5.fw-bold {
+  font-size: 1.75rem !important;
+  font-weight: 600 !important;
+  color: #212529;
+  margin-bottom: 0.5rem;
+}
+
+.container-fluid.py-4 .text-muted {
+  font-size: 0.95rem;
+  color: #6c757d !important;
+  margin-bottom: 1.5rem;
+}
+
+/* Tarjetas de estadísticas - proporciones iguales a cards de registers */
+.container-fluid.py-4 .stat-card {
+  border-radius: 8px !important;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+  transition: box-shadow 0.2s ease;
+  margin-bottom: 1rem;
+  height: 100%;
+}
+
+.container-fluid.py-4 .stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+.container-fluid.py-4 .stat-card .card-body {
+  padding: 1.25rem !important;
+}
+
+/* MODIFICACIÓN: Asegurar texto blanco en tarjetas */
+.container-fluid.py-4 .stat-card,
+.container-fluid.py-4 .stat-card h6,
+.container-fluid.py-4 .stat-card .stat-number,
+.container-fluid.py-4 .stat-card small {
+  color: white !important;
+}
+
+/* Excepción para tarjeta warning (fondo amarillo) */
+.container-fluid.py-4 .stat-card.bg-warning,
+.container-fluid.py-4 .stat-card.bg-warning h6,
+.container-fluid.py-4 .stat-card.bg-warning .stat-number,
+.container-fluid.py-4 .stat-card.bg-warning small {
+  color: #212529 !important;
+}
+
+/* Iconos más pequeños - proporción igual a registers */
+.container-fluid.py-4 .stat-icon {
+  font-size: 1.5rem !important;
+  opacity: 0.9;
+  margin-bottom: 0.75rem;
+}
+
+/* Números de estadística - tamaño proporcional */
+.container-fluid.py-4 .stat-number {
+  font-size: 1.75rem !important;
+  font-weight: 600 !important;
+  margin: 0.5rem 0;
+  line-height: 1.2;
+}
+
+/* Textos de tarjetas */
+.container-fluid.py-4 .text-uppercase {
+  font-size: 0.8rem !important;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+.container-fluid.py-4 small {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+/* Contenedores de gráficos - igual que card-body en registers */
+.container-fluid.py-4 .chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dee2e6;
+  margin-bottom: 1.5rem;
+  height: 100%;
+}
+
+/* Títulos de sección - igual que en registers */
+.container-fluid.py-4 .section-title {
+  font-size: 1.1rem !important;
+  font-weight: 600;
+  color: #212529;
+  border-bottom: 2px solid #0d6efd;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.25rem !important;
+}
+
+/* Listas de empresas/lugares - estilo similar a info-grid */
+.container-fluid.py-4 .list-group {
+  border: none;
+}
+
+.container-fluid.py-4 .list-group-item {
+  border: none;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0.75rem 0.5rem;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.container-fluid.py-4 .list-group-item:last-child {
+  border-bottom: none;
+}
+
+/* Badges - mismos que en registers */
+.container-fluid.py-4 .badge {
+  font-size: 0.75rem !important;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Tarjetas de vencimiento - proporciones iguales */
+.container-fluid.py-4 .vencimiento-card {
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  border-left: 4px solid;
+  margin-bottom: 0.75rem;
+  background: #f8f9fa;
+}
+
+.container-fluid.py-4 .vencimiento-card .card-body {
+  padding: 1rem !important;
+}
+
+.container-fluid.py-4 .vencimiento-card .card-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+/* Alertas - tamaño proporcional */
+.container-fluid.py-4 .alert {
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.container-fluid.py-4 .alert .fa-2x {
+  font-size: 1.5rem !important;
+}
+
+.container-fluid.py-4 .alert-heading {
+  font-size: 1rem !important;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+/* Ajustes responsive - igual que registers */
+@media (max-width: 768px) {
+  .container-fluid.py-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .container-fluid.py-4 .chart-container {
+    padding: 1rem !important;
+  }
+
+  .container-fluid.py-4 .stat-card .card-body {
+    padding: 1rem !important;
+  }
+
+  .container-fluid.py-4 .display-5.fw-bold {
+    font-size: 1.5rem !important;
+  }
+
+  /* MODIFICACIÓN: Agregar espacio entre tarjetas en móviles */
+  .container-fluid.py-4 .row.mb-4 {
+    gap: 1rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .container-fluid.py-4 .row.mb-4 > .col-md-3 {
+    width: calc(50% - 0.5rem) !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Asegurar que las tarjetas sean más legibles en móviles */
+  .container-fluid.py-4 .stat-card {
+    margin-bottom: 0 !important;
+  }
+}

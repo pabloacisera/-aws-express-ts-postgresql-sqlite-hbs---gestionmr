@@ -1,0 +1,49 @@
+<div class="container login-container w-50">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="login-container">
+                <h2 class="text-center mb-4">Iniciar Sesión</h2>
+
+                <form id="login-form">
+                    <div class="mb-3">
+                        <label for="inputEmailUsername" class="form-label">Email o Usuario</label>
+                        <input type="text" class="form-control" id="inputEmailUsername" name="emailOrUsername" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="inputPassword" name="password" required>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="checkRemember" name="rememberMe">
+                        <label class="form-check-label" for="checkRemember">Mantener sesión iniciada</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3">Ingresar</button>
+                </form>
+
+                <div class="text-center mt-4 pt-3 border-top">
+                    <div class="mb-3">
+                        <i class="fas fa-user-plus me-2 text-secondary"></i>
+                        ¿No tienes una cuenta?
+                        <a href="/register-user"
+                            class="link-primary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ms-1 fw-medium">
+                            Regístrate aquí
+                        </a>
+                    </div>
+                    <div>
+                        <i class="fas fa-key me-2 text-secondary"></i>
+                        ¿Has olvidado tu contraseña?
+                        <a href="/recovery-password"
+                            class="link-danger link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ms-1 fw-medium">
+                            Recuperar contraseña
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="/js/login-user.js"></script>

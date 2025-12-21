@@ -1,0 +1,387 @@
+{{! config.hbs }}
+{{!< main}}
+
+<div class="container py-4">
+    <!-- Header de la página -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h2 fw-bold text-gray-800">
+                        <i class="bi bi-gear-fill me-3 text-primary"></i>
+                        Configuración del Sistema
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Personaliza el comportamiento del sistema según tus preferencias
+                    </p>
+                </div>
+                <div>
+                    <button id="saveConfigBtn" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Guardar Cambios
+                    </button>
+                </div>
+            </div>
+            <hr class="my-4">
+        </div>
+    </div>
+
+    {{#if error}}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{error}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {{/if}}
+
+    {{#if configs}}
+        
+
+        <!-- Contenedor principal de configuraciones -->
+        <div class="row">
+            <!-- Panel de Configuraciones -->
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow border-0">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-sliders me-2 text-primary"></i>
+                            Preferencias del Sistema
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="configForm">
+                            <!-- Sección: Generación de Documentos -->
+                            <div class="config-section mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-circle bg-primary bg-opacity-10 p-2 me-3">
+                                        <i class="bi bi-file-earmark-pdf fs-4 text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="h5 fw-bold mb-1">Generación de Documentos</h4>
+                                        <p class="text-muted small mb-0">Configura el comportamiento de los documentos PDF</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="config-item ps-5">
+                                    <div class="form-check form-switch">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            role="switch" 
+                                            id="pdfGenerate" 
+                                            name="pdfGenerate"
+                                            {{#if configs.pdfGenerate}}checked{{/if}}
+                                        >
+                                        <label class="form-check-label" for="pdfGenerate">
+                                            <span class="fw-semibold">Generación automática de PDF</span>
+                                            <p class="text-muted small mb-0 mt-1">
+                                                Habilita la generación automática de documentos PDF al crear nuevos registros
+                                            </p>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección: Visualización de Registros -->
+                            <div class="config-section mb-5">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-circle bg-success bg-opacity-10 p-2 me-3">
+                                        <i class="bi bi-list-columns fs-4 text-success"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="h5 fw-bold mb-1">Visualización de Registros</h4>
+                                        <p class="text-muted small mb-0">Controla cómo se muestran los datos en el sistema</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="config-item ps-5">
+                                    <div class="form-check form-switch">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            role="switch" 
+                                            id="showAllRegistries" 
+                                            name="showAllRegistries"
+                                            {{#if configs.showAllRegistries}}checked{{/if}}
+                                        >
+                                        <label class="form-check-label" for="showAllRegistries">
+                                            <span class="fw-semibold">Mostrar todos los registros</span>
+                                            <p class="text-muted small mb-0 mt-1">
+                                                Muestra todos los registros disponibles sin restricciones de visualización
+                                            </p>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección: Optimización del Sistema -->
+                            <div class="config-section mb-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="icon-circle bg-warning bg-opacity-10 p-2 me-3">
+                                        <i class="bi bi-lightning-charge fs-4 text-warning"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="h5 fw-bold mb-1">Optimización del Sistema</h4>
+                                        <p class="text-muted small mb-0">Configuraciones para mejorar el rendimiento</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="config-item ps-5">
+                                    <div class="form-check form-switch">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            role="switch" 
+                                            id="cacheRegistries" 
+                                            name="cacheRegistries"
+                                            {{#if configs.cacheRegistries}}checked{{/if}}
+                                        >
+                                        <label class="form-check-label" for="cacheRegistries">
+                                            <span class="fw-semibold">Cache de registros</span>
+                                            <p class="text-muted small mb-0 mt-1">
+                                                Almacena en caché los registros frecuentes para mejorar la velocidad de carga
+                                            </p>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer bg-light py-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Los cambios se aplicarán inmediatamente después de guardar
+                            </small>
+                            <div>
+                                <button type="button" id="resetDefaults" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Restaurar Valores
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información Adicional -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="bi bi-question-circle text-primary me-2"></i>
+                                    ¿Cómo funcionan las configuraciones?
+                                </h6>
+                                <p class="small text-muted mb-0">
+                                    Cada configuración modifica el comportamiento específico del sistema. 
+                                    Los cambios se aplican de inmediato y afectan solo a tu usuario.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="bi bi-clock-history text-primary me-2"></i>
+                                    Última Actualización
+                                </h6>
+                                {{#if configs.updatedAt}}
+                                    <p class="small text-muted mb-0">
+                                        {{formatearFechaConHora configs.updatedAt}}
+                                    </p>
+                                {{else}}
+                                    <p class="small text-muted mb-0">
+                                        Configuración recién creada
+                                    </p>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{else}}
+        <!-- Estado sin configuraciones -->
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <div class="card border-0 text-center py-5">
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <i class="bi bi-gear fs-1 text-muted opacity-50"></i>
+                        </div>
+                        <h4 class="card-title mb-3">No hay configuraciones disponibles</h4>
+                        <p class="card-text text-muted mb-4">
+                            No se pudieron cargar las configuraciones del sistema.
+                        </p>
+                        <a href="/" class="btn btn-primary">
+                            <i class="bi bi-arrow-left me-2"></i>Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/if}}
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="modal-title fw-bold mb-3">¡Configuraciones Guardadas!</h4>
+                <p class="text-muted mb-4">
+                    Los cambios han sido aplicados correctamente al sistema.
+                </p>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                    Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .config-section {
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #eaeaea;
+    }
+    
+    .config-section:last-of-type {
+        border-bottom: none;
+    }
+    
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .form-check-input:focus {
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .config-item {
+        padding-left: 2.5rem;
+    }
+    
+    .config-item .form-check-label {
+        cursor: pointer;
+        user-select: none;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM cargado - config.hbs');
+    
+    const saveBtn = document.getElementById('saveConfigBtn');
+    const resetBtn = document.getElementById('resetDefaults');
+    const configForm = document.getElementById('configForm');
+    
+    console.log('Botón save encontrado:', saveBtn);
+    console.log('Botón reset encontrado:', resetBtn);
+    console.log('Form encontrado:', configForm);
+    
+    // Verificar estado inicial de los switches
+    const pdfGenerateCheckbox = document.getElementById('pdfGenerate');
+    console.log('Estado inicial pdfGenerate:', pdfGenerateCheckbox ? pdfGenerateCheckbox.checked : 'No encontrado');
+
+    if (saveBtn) {
+        // Guardar configuraciones
+        saveBtn.addEventListener('click', async function() {
+            console.log('Botón guardar clickeado');
+            try {
+                const formData = new FormData(configForm);
+                const data = {
+                    pdfGenerate: formData.get('pdfGenerate') === 'on',
+                    showAllRegistries: formData.get('showAllRegistries') === 'on',
+                    cacheRegistries: formData.get('cacheRegistries') === 'on'
+                };
+
+                console.log('Datos a enviar:', data);
+
+                const response = await fetch('/api/config/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                console.log('Respuesta del servidor:', result);
+
+                if (result.success) {
+                    // Mostrar modal de éxito
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                } else {
+                    alert('Error al guardar: ' + (result.error || 'Error desconocido'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar las configuraciones');
+            }
+        });
+    }
+
+    if (resetBtn) {
+        // Restaurar valores por defecto
+        resetBtn.addEventListener('click', function() {
+            console.log('Botón reset clickeado');
+            if (confirm('¿Estás seguro de que quieres restaurar los valores por defecto?')) {
+                // Valores por defecto: pdfGenerate=true, otros false
+                document.getElementById('pdfGenerate').checked = true;
+                document.getElementById('showAllRegistries').checked = false;
+                document.getElementById('cacheRegistries').checked = false;
+                
+                console.log('Valores restaurados a defaults');
+                
+                // Mostrar notificación
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-info alert-dismissible fade show mt-3';
+                alertDiv.innerHTML = `
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    Valores por defecto restaurados. Recuerda hacer clic en "Guardar Cambios" para aplicar los cambios.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                configForm.parentNode.insertBefore(alertDiv, configForm.nextSibling);
+            }
+        });
+    }
+
+    // Cambiar estilo de los switches al interactuar
+    const switches = document.querySelectorAll('.form-check-input');
+    switches.forEach(switchElement => {
+        switchElement.addEventListener('change', function() {
+            const label = this.closest('.form-check').querySelector('.form-check-label');
+            if (this.checked) {
+                label.classList.add('text-primary');
+            } else {
+                label.classList.remove('text-primary');
+            }
+        });
+        
+        // Aplicar estilo inicial
+        const label = switchElement.closest('.form-check').querySelector('.form-check-label');
+        if (switchElement.checked) {
+            label.classList.add('text-primary');
+        }
+    });
+});
+</script>

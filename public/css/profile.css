@@ -1,0 +1,328 @@
+/* profile.css - Estilos para el formulario de perfil */
+
+/* Contenedor principal */
+.profile-container {
+    padding-bottom: 2rem;
+}
+
+/* Tarjeta de perfil */
+.profile-card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Header de la tarjeta */
+.profile-card .card-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #0066cc, #004d99);
+}
+
+.profile-card .card-header h3 {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Avatar */
+.avatar-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.avatar-preview {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.avatar-container:hover .avatar-preview {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.avatar-edit-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border: 2px solid #0066cc;
+    transition: all 0.3s ease;
+}
+
+.avatar-edit-btn:hover {
+    background-color: #0066cc;
+    color: white;
+    transform: scale(1.1);
+}
+
+.avatar-help {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* Formulario */
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-label i {
+    color: #0066cc;
+    width: 20px;
+    text-align: center;
+}
+
+.form-control, .form-control-lg {
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.form-control:focus, .form-control-lg:focus {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 0.25rem rgba(0, 102, 204, 0.25);
+    outline: none;
+}
+
+.form-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+/* Textarea de biografía */
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+    max-height: 200px;
+}
+
+/* Contador de caracteres */
+.text-end.small {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+#bioCounter {
+    font-weight: 600;
+}
+
+#bioCounter.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Tarjeta de información de cuenta */
+.account-info-card {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+    background-color: #f8fafc;
+}
+
+.account-info-card .card-header {
+    background-color: transparent;
+    border-bottom: 1px dashed #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.account-info-card .card-header h6 {
+    color: #333;
+    font-weight: 600;
+}
+
+.account-info-card .card-body {
+    padding: 1.25rem;
+}
+
+.account-info-card p {
+    margin-bottom: 0.5rem;
+}
+
+.account-info-card strong {
+    color: #495057;
+    font-weight: 600;
+}
+
+.account-info-card code {
+    background-color: #e9ecef;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #d63384;
+}
+
+/* Botones */
+.save-btn {
+    background: linear-gradient(135deg, #0066cc, #004d99);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+    background: linear-gradient(135deg, #0052a3, #003d7a);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 102, 204, 0.3);
+}
+
+.reset-btn {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+    background-color: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* Footer de la tarjeta */
+.card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.change-password-link {
+    color: #0066cc;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.change-password-link:hover {
+    color: #004d99;
+    text-decoration: underline;
+}
+
+/* Alertas */
+.alert {
+    border-radius: 10px;
+    border: none;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+.alert-success {
+    background-color: #d1e7dd;
+    color: #0a3622;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #58151c;
+}
+
+.alert-info {
+    background-color: #cff4fc;
+    color: #055160;
+}
+
+.btn-close {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+/* Animaciones */
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Estado de carga */
+.loading .save-btn {
+    position: relative;
+    color: transparent;
+}
+
+.loading .save-btn::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-card .card-header {
+        padding: 1rem;
+    }
+    
+    .avatar-preview {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .save-btn, .reset-btn {
+        padding: 0.75rem 1.5rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-md-flex {
+        flex-direction: column;
+    }
+    
+    .me-md-2 {
+        margin-right: 0 !important;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-container {
+        padding: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .form-control-lg {
+        font-size: 0.95rem;
+        padding: 0.6rem 0.8rem;
+    }
+}

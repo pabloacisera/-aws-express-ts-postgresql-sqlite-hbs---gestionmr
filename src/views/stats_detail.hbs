@@ -1,0 +1,255 @@
+
+{{! views/stats_detail.hbs }}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="fas fa-list-alt me-2"></i>{{title}}
+                    </h2>
+                    <p class="text-muted mb-0">Detalle completo de los registros</p>
+                </div>
+                <a href="/stats" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver a Estadísticas
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{#if (eq tipo 'vencimiento')}}
+    <!-- Vista para detalle de vencimientos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        {{detalle.titulo}} - Total: {{detalle.total}} registros
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {{#if detalle.total}}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Interno</th>
+                                    <th>Dominio</th>
+                                    <th>Empresa</th>
+                                    <th>Conductor</th>
+                                    <th>Documento Conductor</th>
+                                    <th>Vencimiento</th>
+                                    {{#if (eq detalle.estado 'proximos')}}
+                                    <th>Días Restantes</th>
+                                    {{/if}}
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each detalle.registros}}
+                                <tr>
+                                    <td>{{this.interno}}</td>
+                                    <td>{{this.dominio}}</td>
+                                    <td>{{this.empresa}}</td>
+                                    <td>{{this.conductor}}</td>
+                                    <td>{{this.documentoConductor}}</td>
+                                    <td>
+                                        <span class="badge bg-{{#if (eq @root.detalle.estado 'vencidos')}}danger{{else}}warning{{/if}}">
+                                            {{this.vencimientoFormateado}}
+                                        </span>
+                                    </td>
+                                    {{#if (eq @root.detalle.estado 'proximos')}}
+                                    <td>
+                                        <span class="badge bg-info">{{this.diasRestantes}} días</span>
+                                    </td>
+                                    {{/if}}
+                                    <td>
+                                        <!-- Enlace para cargar documentos para TODOS los tipos -->
+                                        <a href="/doc-register/{{this.id}}" class="btn btn-sm btn-outline-success" title="Cargar/Ver documentos">
+                                            <i class="fas fa-file-upload me-1"></i>Documentar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                    {{else}}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No hay registros en esta categoría.
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if (eq tipo 'documento')}}
+    <!-- Vista para detalle de documentos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        {{detalle.titulo}} - Total: {{detalle.total}} documentos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {{#if detalle.total}}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Archivo</th>
+                                    <th>Interno</th>
+                                    <th>Dominio</th>
+                                    <th>Empresa</th>
+                                    <th>Conductor</th>
+                                    <th>Tamaño</th>
+                                    <th>Fecha Subida</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each detalle.documentos}}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                                        {{this.nombreArchivo}}
+                                    </td>
+                                    <td>{{this.interno}}</td>
+                                    <td>{{this.dominio}}</td>
+                                    <td>{{this.empresa}}</td>
+                                    <td>{{this.conductor}}</td>
+                                    <td>{{this.tamaño}}</td>
+                                    <td>{{this.fechaSubidaFormateada}}</td>
+                                    <td>
+                                        <a href="/api/cert/{{this.id}}/download" class="btn btn-sm btn-outline-primary" title="Descargar">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="/api/cert/{{this.id}}/preview" target="_blank" class="btn btn-sm btn-outline-info" title="Previsualizar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/doc-register/{{this.controlId}}" class="btn btn-sm btn-outline-success" title="Cargar más documentos">
+                                            <i class="fas fa-file-upload"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                    {{else}}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No hay documentos en esta categoría.
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+
+    {{#if (eq tipo 'empresa')}}
+    <!-- Vista para detalle por empresa -->
+    <div class="row">
+        {{#each detalle.empresas}}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building me-2"></i>
+                        {{this.nombre}} 
+                        <span class="badge bg-light text-dark ms-2">{{this.cantidad}} registros</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Interno</th>
+                                    <th>Dominio</th>
+                                    <th>Conductor</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each this.registros}}
+                                <tr>
+                                    <td>{{this.interno}}</td>
+                                    <td>{{this.dominio}}</td>
+                                    <td>{{this.conductor}}</td>
+                                    <td>{{this.fecha}}</td>
+                                    <td>
+                                        <a href="/doc-register/{{this.id}}" class="btn btn-sm btn-outline-success" title="Cargar documentos">
+                                            <i class="fas fa-file-upload"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if (eq tipo 'lugar')}}
+    <!-- Vista para detalle por lugar -->
+    <div class="row">
+        {{#each detalle.lugares}}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        {{this.nombre}} 
+                        <span class="badge bg-light text-dark ms-2">{{this.cantidad}} registros</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Interno</th>
+                                    <th>Dominio</th>
+                                    <th>Empresa</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each this.registros}}
+                                <tr>
+                                    <td>{{this.interno}}</td>
+                                    <td>{{this.dominio}}</td>
+                                    <td>{{this.empresa}}</td>
+                                    <td>{{this.fecha}}</td>
+                                    <td>
+                                        <a href="/doc-register/{{this.id}}" class="btn btn-sm btn-outline-success" title="Cargar documentos">
+                                            <i class="fas fa-file-upload"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+    {{/if}}
+</div>
