@@ -1,0 +1,33 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 3.144.137.220
+          username: ec2-user
+          key: ${{ secrets.AWS_SSH_KEY }} # <-- Verifica que este nombre sea el que guardaste
+          script: |
+            cd /opt/gestionmr
+
+            # 1. Actualizar código
+            git reset --hard origin/main
+            git pull origin main
+
+            # 2. Instalar y Compilar
+            npm ci
+            npm run build
+
+            # 3. Reiniciar servicios
+            sudo systemctl restart gestionmr.service
+            sudo systemctl restart nginx
