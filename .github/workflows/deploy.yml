@@ -20,14 +20,17 @@ jobs:
           script: |
             cd /opt/gestionmr
 
-            # 1. Actualizar código
+            # 1. Limpiar cualquier cambio local y forzar la descarga de GitHub
+            git fetch --all
             git reset --hard origin/main
-            git pull origin main
 
-            # 2. Instalar y Compilar
-            npm ci
+            # 2. Instalar dependencias y generar cliente de base de datos (si usas Prisma)
+            npm install
+            npx prisma generate
+
+            # 3. COMPILAR (Esto es lo más importante si usas TypeScript)
+            # Esto actualiza la carpeta /dist que es la que realmente corre
             npm run build
 
-            # 3. Reiniciar servicios
+            # 4. Reiniciar el servicio para que tome los cambios de /dist
             sudo systemctl restart gestionmr.service
-            sudo systemctl restart nginx
