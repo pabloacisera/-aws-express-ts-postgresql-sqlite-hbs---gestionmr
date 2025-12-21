@@ -1,262 +1,401 @@
-<link rel="stylesheet" href="/css/new_registers.css">
+<link rel="stylesheet" href="/css/new_registers.css" />
 <div class="container">
-    <div class="form-container">
-        <h2 class="text-center mb-4">Control de Registro de Vehículos</h2>
-        <p class="text-center text-muted mb-4">Departamento General Obligado - Santa Fe, Argentina</p>
+  <div class="form-container">
+    <h2 class="text-center mb-4">Control de Registro de Vehículos</h2>
+    <p class="text-center text-muted mb-4">Departamento General Obligado - Santa
+      Fe, Argentina</p>
 
-        <form id="controlForm">
-            <!-- Sección 1: Datos del Control -->
-            <div class="section-title">Datos del Control</div>
-            <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                    <label for="agente" class="form-label">Agente</label>
-                    <input type="text" class="form-control" id="agente" name="agente" required value="{{user.name}}">
-                </div>
-                <div class="col-md-4">
-                    <label for="fecha" class="form-label">Fecha</label>
-                    <input type="datetime-local" class="form-control" id="fecha" name="fecha" required>
-                </div>
-                <div class="col-md-4">
-                    <label for="lugar" class="form-label">Localidad</label>
-                    <select class="form-select" id="lugar" name="lugar" required>
-                        <option value="">Seleccione...</option>
+    <form id="controlForm">
+      <!-- Sección 1: Datos del Control -->
+      <div class="section-title">Datos del Control</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label for="agente" class="form-label">Agente</label>
+          <input
+            type="text"
+            class="form-control"
+            id="agente"
+            name="agente"
+            required
+            value="{{user.name}}"
+          />
+        </div>
+        <div class="col-md-4">
+          <label for="fecha" class="form-label">Fecha</label>
+          <input
+            type="datetime-local"
+            class="form-control"
+            id="fecha"
+            name="fecha"
+            required
+          />
+        </div>
+        <div class="col-md-4">
+          <label for="lugar" class="form-label">Localidad</label>
+          <select class="form-select" id="lugar" name="lugar" required>
+            <option value="">Seleccione...</option>
 
-                        <!-- Zona Norte - Departamentos involucrados -->
-                        <!-- Departamento General Obligado -->
-                        <optgroup label="Departamento General Obligado">
-                            <option value="Reconquista">Reconquista</option>
-                            <option value="Avellaneda">Avellaneda</option>
-                            <option value="Malabrigo">Malabrigo</option>
-                            <option value="Villa Ocampo">Villa Ocampo</option>
-                            <option value="Las Toscas">Las Toscas</option>
-                            <option value="Florencia">Florencia</option>
-                            <option value="Guadalupe Norte">Guadalupe Norte</option>
-                            <option value="Villa Ana">Villa Ana</option>
-                            <option value="Los Laureles">Los Laureles</option>
-                            <option value="Vera">Vera</option>
-                            <option value="Calchaquí">Calchaquí</option>
-                            <option value="Margarita">Margarita</option>
-                            <option value="Tostado">Tostado</option>
-                            <option value="Golondrina">Golondrina</option>
-                            <option value="La Sarita">La Sarita</option>
-                            <option value="Garabato">Garabato</option>
-                            <option value="San Antonio de Obligado">San Antonio de Obligado</option>
-                            <option value="El Rabón">El Rabón</option>
-                            <option value="El Sombrerito">El Sombrerito</option>
-                            <option value="Nicanor Molinas">Nicanor Molinas</option>
-                        </optgroup>
+            <option value="otros" class="fw-bold text-primary">--- OTROS (Carga
+              Manual) ---</option>
 
-                        <!-- Departamento Vera -->
-                        <optgroup label="Departamento Vera">
-                            <option value="Vera y Pintado">Vera y Pintado</option>
-                            <option value="Fortín Olmos">Fortín Olmos</option>
-                            <option value="Toba">Toba</option>
-                            <option value="Intiyaco">Intiyaco</option>
-                        </optgroup>
+            <!-- Zona Norte - Departamentos involucrados -->
+            <!-- Departamento General Obligado -->
+            <optgroup label="Departamento General Obligado">
+              <option value="Reconquista">Reconquista</option>
+              <option value="Avellaneda">Avellaneda</option>
+              <option value="Malabrigo">Malabrigo</option>
+              <option value="Villa Ocampo">Villa Ocampo</option>
+              <option value="Las Toscas">Las Toscas</option>
+              <option value="Florencia">Florencia</option>
+              <option value="Guadalupe Norte">Guadalupe Norte</option>
+              <option value="Villa Ana">Villa Ana</option>
+              <option value="Los Laureles">Los Laureles</option>
+              <option value="Vera">Vera</option>
+              <option value="Calchaquí">Calchaquí</option>
+              <option value="Margarita">Margarita</option>
+              <option value="Tostado">Tostado</option>
+              <option value="Golondrina">Golondrina</option>
+              <option value="La Sarita">La Sarita</option>
+              <option value="Garabato">Garabato</option>
+              <option value="San Antonio de Obligado">San Antonio de Obligado</option>
+              <option value="El Rabón">El Rabón</option>
+              <option value="El Sombrerito">El Sombrerito</option>
+              <option value="Nicanor Molinas">Nicanor Molinas</option>
+            </optgroup>
 
-                        <!-- Departamento San Javier -->
-                        <optgroup label="Departamento San Javier">
-                            <option value="San Javier">San Javier</option>
-                            <option value="Romang">Romang</option>
-                            <option value="Helvecia">Helvecia</option>
-                        </optgroup>
-                    </select>
-                </div>
+            <!-- Departamento Vera -->
+            <optgroup label="Departamento Vera">
+              <option value="Vera y Pintado">Vera y Pintado</option>
+              <option value="Fortín Olmos">Fortín Olmos</option>
+              <option value="Toba">Toba</option>
+              <option value="Intiyaco">Intiyaco</option>
+            </optgroup>
+
+            <!-- Departamento San Javier -->
+            <optgroup label="Departamento San Javier">
+              <option value="San Javier">San Javier</option>
+              <option value="Romang">Romang</option>
+              <option value="Helvecia">Helvecia</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sección 2: Datos del Conductor -->
+      <div class="section-title">Datos del Conductor</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="conductor_nombre" class="form-label">Nombre del Conductor</label>
+          <input
+            type="text"
+            class="form-control"
+            id="conductor_nombre"
+            name="conductor_nombre"
+            required
+          />
+        </div>
+        <div class="col-md-6">
+          <label for="licencia_numero" class="form-label">Número de Licencia</label>
+          <input
+            type="text"
+            class="form-control"
+            id="licencia_numero"
+            name="licencia_numero"
+            required
+          />
+        </div>
+        <div class="col-md-6">
+          <label for="licencia_tipo" class="form-label">Tipo de Licencia</label>
+          <select
+            class="form-select"
+            id="licencia_tipo"
+            name="licencia_tipo"
+            required
+          >
+            <option value="">Seleccione...</option>
+            <option value="Clase A">Clase A - Ciclomotores</option>
+            <option value="Clase B">Clase B - Automóviles y camionetas</option>
+            <option value="Clase C">Clase C - Camiones sin acoplado y casas
+              rodantes</option>
+            <option value="Clase D">Clase D - Transporte de pasajeros, taxis y
+              remises</option>
+            <option value="Clase E">Clase E - Camiones con acoplado</option>
+            <option value="Clase F">Clase F - Automotores especiales</option>
+            <option value="Clase G">Clase G - Tractores agrícolas</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label for="licencia_vencimiento" class="form-label">Vencimiento de
+            Licencia</label>
+          <input
+            type="date"
+            class="form-control"
+            id="licencia_vencimiento"
+            name="licencia_vencimiento"
+          />
+        </div>
+      </div>
+
+      <!-- Sección 3: Datos de Empresa y Vehículo -->
+      <div class="section-title">Datos de Empresa y Vehículo</div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="empresa_select" class="form-label">Empresa de Transporte</label>
+          <select
+            class="form-select"
+            id="empresa_select"
+            name="empresa_select"
+            required
+          >
+            <option value="">Seleccione...</option>
+            <!-- Empresas Principales de Pasajeros -->
+            <optgroup label="Transporte de Pasajeros">
+              <option value="Ciudad de Reconquista">Ciudad de Reconquista</option>
+              <option value="Flecha Bus">Flecha Bus</option>
+              <option value="El Norte">El Norte</option>
+              <option value="El Norte Bis">El Norte Bis</option>
+              <option value="Parana Medio">Parana Medio</option>
+              <option value="Encon">Encon</option>
+              <option value="La Nueva Estrella">La Nueva Estrella</option>
+              <option value="Crucero del Norte">Crucero del Norte</option>
+              <option value="Empresa Vía Tac">Empresa Vía Tac</option>
+              <option value="La Estrella">La Estrella</option>
+            </optgroup>
+
+            <!-- Empresas de Carga -->
+            <optgroup label="Transporte de Carga">
+              <option value="Transportes Reconquista">Transportes Reconquista</option>
+              <option value="Carga Norte">Carga Norte</option>
+              <option value="Logística del Litoral">Logística del Litoral</option>
+              <option value="Fletes Avellaneda">Fletes Avellaneda</option>
+              <option value="Transportes Malabrigo">Transportes Malabrigo</option>
+              <option value="Cargas Vera">Cargas Vera</option>
+              <option value="Distribuidora Ocampo">Distribuidora Ocampo</option>
+              <option value="Fletes Las Toscas">Fletes Las Toscas</option>
+              <option value="Transportes Florencia">Transportes Florencia</option>
+              <option value="Logística Guadalupe">Logística Guadalupe</option>
+            </optgroup>
+
+            <!-- Empresas Locales/Regionales -->
+            <optgroup label="Transporte Local">
+              <option value="Transportes Villa Ana">Transportes Villa Ana</option>
+              <option value="Fletes Los Laureles">Fletes Los Laureles</option>
+              <option value="Transportes Calchaquí">Transportes Calchaquí</option>
+              <option value="Cargas Margarita">Cargas Margarita</option>
+              <option value="Fletes Tostado">Fletes Tostado</option>
+            </optgroup>
+          </select>
+
+          <div
+            id="container_empresa_manual"
+            class="mt-2"
+            style="display: none;"
+          >
+            <input
+              type="text"
+              class="form-control"
+              id="empresa_manual"
+              name="empresa_manual"
+              placeholder="Escriba el nombre de la empresa"
+            />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label for="dominio" class="form-label">Dominio/Patente</label>
+          <input
+            type="text"
+            class="form-control"
+            id="dominio"
+            name="dominio"
+            placeholder="ABC123"
+            pattern="[A-Z0-9]+"
+            oninput="this.value = this.value.toUpperCase()"
+            onblur="this.value = this.value.toUpperCase()"
+            required
+            title="Ingrese la patente en mayúsculas (ej: ABC123)"
+          />
+        </div>
+        <div class="col-md-3">
+          <label for="interno" class="form-label">Número Interno</label>
+          <input
+            type="text"
+            class="form-control"
+            id="interno"
+            name="interno"
+            placeholder="Ej: 45"
+          />
+        </div>
+      </div>
+
+      <!-- Sección 4: Registros de Documentación -->
+      <div class="section-title">Registros de Documentación del Vehículo</div>
+
+      <!-- Certificado de Matriculación -->
+      <div class="registro-row">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <div class="registro-label">Certificado de Matriculación</div>
+          </div>
+          <div class="col-md-1 text-center">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="c_matriculacion_check"
+                name="c_matriculacion_check"
+              />
             </div>
+          </div>
+          <div class="col-md-4">
+            <input
+              type="date"
+              class="form-control"
+              id="c_matriculacion_venc"
+              name="c_matriculacion_venc"
+            />
+          </div>
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              id="c_matriculacion_cert"
+              name="c_matriculacion_cert"
+              placeholder="Nro de planilla"
+            />
+          </div>
+        </div>
+      </div>
 
-            <!-- Sección 2: Datos del Conductor -->
-            <div class="section-title">Datos del Conductor</div>
-            <div class="row g-3 mb-3">
-                <div class="col-md-6">
-                    <label for="conductor_nombre" class="form-label">Nombre del Conductor</label>
-                    <input type="text" class="form-control" id="conductor_nombre" name="conductor_nombre" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="licencia_numero" class="form-label">Número de Licencia</label>
-                    <input type="text" class="form-control" id="licencia_numero" name="licencia_numero" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="licencia_tipo" class="form-label">Tipo de Licencia</label>
-                    <select class="form-select" id="licencia_tipo" name="licencia_tipo" required>
-                        <option value="">Seleccione...</option>
-                        <option value="Clase A">Clase A - Ciclomotores</option>
-                        <option value="Clase B">Clase B - Automóviles y camionetas</option>
-                        <option value="Clase C">Clase C - Camiones sin acoplado y casas rodantes</option>
-                        <option value="Clase D">Clase D - Transporte de pasajeros, taxis y remises</option>
-                        <option value="Clase E">Clase E - Camiones con acoplado</option>
-                        <option value="Clase F">Clase F - Automotores especiales</option>
-                        <option value="Clase G">Clase G - Tractores agrícolas</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label for="licencia_vencimiento" class="form-label">Vencimiento de Licencia</label>
-                    <input type="date" class="form-control" id="licencia_vencimiento" name="licencia_vencimiento">
-                </div>
+      <!-- Seguro -->
+      <div class="registro-row">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <div class="registro-label">Seguro</div>
+          </div>
+          <div class="col-md-1 text-center">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="seguro_check"
+                name="seguro_check"
+              />
             </div>
+          </div>
+          <div class="col-md-4">
+            <input
+              type="date"
+              class="form-control"
+              id="seguro_venc"
+              name="seguro_venc"
+            />
+          </div>
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              id="seguro_cert"
+              name="seguro_cert"
+              placeholder="Nro de póliza"
+            />
+          </div>
+        </div>
+      </div>
 
-            <!-- Sección 3: Datos de Empresa y Vehículo -->
-            <div class="section-title">Datos de Empresa y Vehículo</div>
-            <div class="row g-3 mb-3">
-                <div class="col-md-6">
-                    <label for="empresa_select" class="form-label">Empresa de Transporte</label>
-                    <select class="form-select" id="empresa_select" name="empresa_select" required>
-                        <option value="">Seleccione...</option>
-                        <!-- Empresas Principales de Pasajeros -->
-                        <optgroup label="Transporte de Pasajeros">
-                            <option value="Ciudad de Reconquista">Ciudad de Reconquista</option>
-                            <option value="Flecha Bus">Flecha Bus</option>
-                            <option value="El Norte">El Norte</option>
-                            <option value="El Norte Bis">El Norte Bis</option>
-                            <option value="Parana Medio">Parana Medio</option>
-                            <option value="Encon">Encon</option>
-                            <option value="La Nueva Estrella">La Nueva Estrella</option>
-                            <option value="Crucero del Norte">Crucero del Norte</option>
-                            <option value="Empresa Vía Tac">Empresa Vía Tac</option>
-                            <option value="La Estrella">La Estrella</option>
-                        </optgroup>
-
-                        <!-- Empresas de Carga -->
-                        <optgroup label="Transporte de Carga">
-                            <option value="Transportes Reconquista">Transportes Reconquista</option>
-                            <option value="Carga Norte">Carga Norte</option>
-                            <option value="Logística del Litoral">Logística del Litoral</option>
-                            <option value="Fletes Avellaneda">Fletes Avellaneda</option>
-                            <option value="Transportes Malabrigo">Transportes Malabrigo</option>
-                            <option value="Cargas Vera">Cargas Vera</option>
-                            <option value="Distribuidora Ocampo">Distribuidora Ocampo</option>
-                            <option value="Fletes Las Toscas">Fletes Las Toscas</option>
-                            <option value="Transportes Florencia">Transportes Florencia</option>
-                            <option value="Logística Guadalupe">Logística Guadalupe</option>
-                        </optgroup>
-
-                        <!-- Empresas Locales/Regionales -->
-                        <optgroup label="Transporte Local">
-                            <option value="Transportes Villa Ana">Transportes Villa Ana</option>
-                            <option value="Fletes Los Laureles">Fletes Los Laureles</option>
-                            <option value="Transportes Calchaquí">Transportes Calchaquí</option>
-                            <option value="Cargas Margarita">Cargas Margarita</option>
-                            <option value="Fletes Tostado">Fletes Tostado</option>
-                        </optgroup>
-                    </select>
-
-                    <div id="container_empresa_manual" class="mt-2" style="display: none;">
-                        <input type="text" class="form-control" id="empresa_manual" name="empresa_manual"
-                            placeholder="Escriba el nombre de la empresa">
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label for="dominio" class="form-label">Dominio/Patente</label>
-                    <input type="text" class="form-control" id="dominio" name="dominio" placeholder="ABC123"
-                        pattern="[A-Z0-9]+" oninput="this.value = this.value.toUpperCase()"
-                        onblur="this.value = this.value.toUpperCase()" required
-                        title="Ingrese la patente en mayúsculas (ej: ABC123)">
-                </div>
-                <div class="col-md-3">
-                    <label for="interno" class="form-label">Número Interno</label>
-                    <input type="text" class="form-control" id="interno" name="interno" placeholder="Ej: 45">
-                </div>
+      <!-- RTO -->
+      <div class="registro-row">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <div class="registro-label">RTO (Revisión Técnica)</div>
+          </div>
+          <div class="col-md-1 text-center">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="rto_check"
+                name="rto_check"
+              />
             </div>
+          </div>
+          <div class="col-md-4">
+            <input
+              type="date"
+              class="form-control"
+              id="rto_venc"
+              name="rto_venc"
+            />
+          </div>
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              id="rto_cert"
+              name="rto_cert"
+              placeholder="Nro de certificado"
+            />
+          </div>
+        </div>
+      </div>
 
-            <!-- Sección 4: Registros de Documentación -->
-            <div class="section-title">Registros de Documentación del Vehículo</div>
-
-            <!-- Certificado de Matriculación -->
-            <div class="registro-row">
-                <div class="row align-items-center">
-                    <div class="col-md-3">
-                        <div class="registro-label">Certificado de Matriculación</div>
-                    </div>
-                    <div class="col-md-1 text-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="c_matriculacion_check"
-                                name="c_matriculacion_check">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="date" class="form-control" id="c_matriculacion_venc" name="c_matriculacion_venc">
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" id="c_matriculacion_cert" name="c_matriculacion_cert"
-                            placeholder="Nro de planilla">
-                    </div>
-                </div>
+      <!-- Tacógrafo -->
+      <div class="registro-row">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <div class="registro-label">Tacógrafo</div>
+          </div>
+          <div class="col-md-1 text-center">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="tacografo_check"
+                name="tacografo_check"
+              />
             </div>
+          </div>
+          <div class="col-md-4">
+            <input
+              type="date"
+              class="form-control"
+              id="tacografo_venc"
+              name="tacografo_venc"
+            />
+          </div>
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              id="tacografo_cert"
+              name="tacografo_cert"
+              placeholder="Nro de certificado"
+            />
+          </div>
+        </div>
+      </div>
 
-            <!-- Seguro -->
-            <div class="registro-row">
-                <div class="row align-items-center">
-                    <div class="col-md-3">
-                        <div class="registro-label">Seguro</div>
-                    </div>
-                    <div class="col-md-1 text-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="seguro_check" name="seguro_check">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="date" class="form-control" id="seguro_venc" name="seguro_venc">
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" id="seguro_cert" name="seguro_cert"
-                            placeholder="Nro de póliza">
-                    </div>
-                </div>
-            </div>
-
-            <!-- RTO -->
-            <div class="registro-row">
-                <div class="row align-items-center">
-                    <div class="col-md-3">
-                        <div class="registro-label">RTO (Revisión Técnica)</div>
-                    </div>
-                    <div class="col-md-1 text-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="rto_check" name="rto_check">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="date" class="form-control" id="rto_venc" name="rto_venc">
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" id="rto_cert" name="rto_cert"
-                            placeholder="Nro de certificado">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tacógrafo -->
-            <div class="registro-row">
-                <div class="row align-items-center">
-                    <div class="col-md-3">
-                        <div class="registro-label">Tacógrafo</div>
-                    </div>
-                    <div class="col-md-1 text-center">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="tacografo_check" name="tacografo_check">
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="date" class="form-control" id="tacografo_venc" name="tacografo_venc">
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" class="form-control" id="tacografo_cert" name="tacografo_cert"
-                            placeholder="Nro de certificado">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botones -->
-            <div class="row mt-4">
-                <div class="col-12 text-center">
-                    <button type="submit" class="btn btn-primary btn-lg me-2" id="btn-new-control">
-                        <i class="bi bi-save"></i> Guardar Registro
-                    </button>
-                    <button type="reset" class="btn btn-secondary btn-lg" id="btn-clean-control">
-                        <i class="bi bi-x-circle"></i> Limpiar
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
+      <!-- Botones -->
+      <div class="row mt-4">
+        <div class="col-12 text-center">
+          <button
+            type="submit"
+            class="btn btn-primary btn-lg me-2"
+            id="btn-new-control"
+          >
+            <i class="bi bi-save"></i>
+            Guardar Registro
+          </button>
+          <button
+            type="reset"
+            class="btn btn-secondary btn-lg"
+            id="btn-clean-control"
+          >
+            <i class="bi bi-x-circle"></i>
+            Limpiar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 <script type="module" src="/js/new_registers.js"></script>
