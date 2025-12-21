@@ -1,0 +1,38 @@
+# Dependencias
+node_modules/
+
+# Compilación
+dist/
+build/
+
+# Base de datos y caché local (¡Importante!)
+*.db
+*.db-journal
+
+# Variables de entorno
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Prisma (Generado dinámicamente)
+/src/generated/prisma
+
+# Archivos de seguridad (Certificados/Llaves)
+*.pem
+*.key
+*.crt
+
+# Archivos temporales o de sistema
+.DS_Store
+Thumbs.db
+
+# Carpeta de subidas (si los usuarios suben archivos, no quieres que se pisen en cada deploy)
+uploads/
+
+# Archivos comprimidos de respaldo
+*.tar.gz
+*.zip
