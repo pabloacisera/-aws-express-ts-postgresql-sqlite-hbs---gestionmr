@@ -5,23 +5,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const containerManual = document.getElementById("container_empresa_manual");
   const empresaManualInput = document.getElementById("empresa_manual");
 
-  // Lógica para mostrar/ocultar "Otros"
   empresaSelect.addEventListener("change", function () {
-    console.log("Valor detectado por JS:", this.value); // Revisa esto en F12
+    const valor = this.value;
+    console.log("Cambio detectado. Valor:", valor); // ESTO DEBE SALIR EN TU NAVEGADOR (F12)
 
-    // Convertimos a minúsculas y quitamos espacios para evitar errores
-    const valorSaneado = this.value.toLowerCase().trim();
-
-    if (valorSaneado === "otros") {
+    if (valor === "empresa_otros") {
+      // Usamos el nuevo valor único
       containerManual.style.setProperty("display", "block", "important");
       empresaManualInput.required = true;
-      console.log("Mostrando campo manual...");
+      empresaManualInput.focus(); // Para que el usuario empiece a escribir
     } else {
-      containerManual.style.display = "none";
+      containerManual.style.setProperty("display", "none", "important");
       empresaManualInput.required = false;
       empresaManualInput.value = "";
     }
   });
+
   // Manejar habilitación/deshabilitación de campos según checkboxes
   const checkboxes = [
     {
