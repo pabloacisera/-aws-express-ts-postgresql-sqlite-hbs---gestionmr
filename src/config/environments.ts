@@ -1,7 +1,10 @@
 import dotenv from "dotenv";
 import type { Environments } from "../interface/envs.interface.js";
+import path from "path";
 
-dotenv.config();
+const envFile = process.env.NODE_ENV === "development" ? ".env.development" : ".env";
+
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
 export const environment: Environments = {
   port: process.env.PORT || "",

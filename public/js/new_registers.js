@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Determinar el nombre final de la empresa
       let empresaFinal = formData.get("empresa_select");
-      if (empresaFinal === "otros") {
+      if (empresaFinal === "empresa_otros") {
         empresaFinal = formData.get("empresa_manual");
       }
 

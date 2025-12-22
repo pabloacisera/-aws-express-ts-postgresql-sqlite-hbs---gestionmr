@@ -78,6 +78,11 @@ model ControlRegister {
   updatedAt            DateTime @default(now())
 
   certificates         CertificateDocument[]
+
+  isDeleted            Boolean  @default(false)
+  deletedAt            DateTime?
+
+  @@index([isDeleted])
 }
 
 model CertificateDocument {
@@ -101,6 +106,11 @@ model CertificateDocument {
   // metadata opcional
   description       String?
   uploadedAt        DateTime @default(now())
+
+  isDeleted            Boolean  @default(false)
+  deletedAt            DateTime?
+
+  @@index([isDeleted])
 
   // indices compuestos
   @@index([controlId, certificateType])
