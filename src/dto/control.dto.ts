@@ -23,6 +23,9 @@ export interface dataControl {
 
   tacografo_venc: Date | null;  // Cambiar de undefined a null
   tacografo_cert: string | null;  // Cambiar de undefined a null
+
+  isDeleted: boolean | number,
+  deletedAt: string | null
 }
 
 export interface controlResponse {

@@ -115,7 +115,6 @@ export class RegistersCacheService {
   }
 
   // nuevo registro
-  // nuevo registro
   static async createNewRegister(data: dataControl) {
 
     const stmt = this.db.prepare(`
@@ -128,7 +127,7 @@ export class RegistersCacheService {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
         `);
 
-    // CONVERSIÓN DE FECHAS A STRINGS (AGREGAR ESTO)
+    // CONVERSIÓN DE FECHAS A STRINGS
     const fecha = data.fecha instanceof Date ? data.fecha.toISOString() : data.fecha;
     const licenciaVencimiento = data.licencia_vencimiento ? new Date(data.licencia_vencimiento).toISOString() : null;
     const cMatriculacionVenc = data.c_matriculacion_venc instanceof Date ? data.c_matriculacion_venc.toISOString() : data.c_matriculacion_venc;
@@ -139,22 +138,22 @@ export class RegistersCacheService {
     const result = stmt.run(
       data.userId,
       data.agente,
-      fecha,  // <-- Usar la variable convertida
+      fecha,
       data.lugar,
       data.conductor_nombre,
       data.licencia_tipo,
       data.licencia_numero,
-      licenciaVencimiento,  // <-- Usar la variable convertida
+      licenciaVencimiento,
       data.empresa_select,
       data.dominio,
       data.interno || null,
-      cMatriculacionVenc,  // <-- Usar la variable convertida
+      cMatriculacionVenc,
       data.c_matriculacion_cert || null,
-      seguroVenc,  // <-- Usar la variable convertida
+      seguroVenc,
       data.seguro_cert || null,
-      rtoVenc,  // <-- Usar la variable convertida
+      rtoVenc,
       data.rto_cert || null,
-      tacografoVenc,  // <-- Usar la variable convertida
+      tacografoVenc,
       data.tacografo_cert || null
     );
 
@@ -209,8 +208,6 @@ export class RegistersCacheService {
   }
 
   static async deleteRegistry(controlId: number): Promise<boolean> {
-    // Nota: En SQLite las foreign keys no están activas por defecto
-    // Eliminar control (los certificados se manejarán por cascada en PostgreSQL)
     const stmt = this.db.prepare(
       "DELETE FROM ControlRegister WHERE id = ?"
     );
@@ -219,50 +216,47 @@ export class RegistersCacheService {
     return result.changes > 0;
   }
 
-  // Método auxiliar para actualizar un registro
-  // Método auxiliar para actualizar un registro
   static async updateRegistry(id: number, data: any): Promise<boolean> {
-    // FUNCIÓN DE CONVERSIÓN (AGREGAR ESTO AL INICIO DEL MÉTODO)
     const convertDate = (date: any): string | null => {
       if (date instanceof Date) return date.toISOString();
       return date;
     };
 
     const stmt = this.db.prepare(`
-      UPDATE ControlRegister SET
-        agente = ?, fecha = ?, lugar = ?, conductor_nombre = ?,
-        licencia_tipo = ?, licencia_numero = ?, licencia_vencimiento = ?,
-        empresa_select = ?, dominio = ?, interno = ?,
-        c_matriculacion_venc = ?, c_matriculacion_cert = ?,
-        seguro_venc = ?, seguro_cert = ?,
-        rto_venc = ?, rto_cert = ?,
-        tacografo_venc = ?, tacografo_cert = ?,
-        isDeleted = ?,
-        updatedAt = datetime('now'), _cached_at = datetime('now')
-      WHERE id = ?
-    `);
+    UPDATE ControlRegister SET
+      agente = ?, fecha = ?, lugar = ?, conductor_nombre = ?,
+      licencia_tipo = ?, licencia_numero = ?, licencia_vencimiento = ?,
+      empresa_select = ?, dominio = ?, interno = ?,
+      c_matriculacion_venc = ?, c_matriculacion_cert = ?,
+      seguro_venc = ?, seguro_cert = ?,
+      rto_venc = ?, rto_cert = ?,
+      tacografo_venc = ?, tacografo_cert = ?,
+      isDeleted = ?, 
+      updatedAt = datetime('now'), _cached_at = datetime('now')
+    WHERE id = ?
+  `);
 
     const result = stmt.run(
       data.agente,
-      convertDate(data.fecha),  // <-- Usar la función de conversión
+      convertDate(data.fecha),
       data.lugar,
       data.conductor_nombre,
       data.licencia_tipo,
       data.licencia_numero,
-      convertDate(data.licencia_vencimiento),  // <-- Usar la función de conversión
+      convertDate(data.licencia_vencimiento),
       data.empresa_select,
       data.dominio,
       data.interno,
-      convertDate(data.c_matriculacion_venc),  // <-- Usar la función de conversión
+      convertDate(data.c_matriculacion_venc),
       data.c_matriculacion_cert,
-      convertDate(data.seguro_venc),  // <-- Usar la función de conversión
+      convertDate(data.seguro_venc),
       data.seguro_cert,
-      convertDate(data.rto_venc),  // <-- Usar la función de conversión
+      convertDate(data.rto_venc),
       data.rto_cert,
-      convertDate(data.tacografo_venc),  // <-- Usar la función de conversión
+      convertDate(data.tacografo_venc),
       data.tacografo_cert,
-      id,
-      data.isDeleted ? 1 : 0
+      (data.isDeleted === true || data.isDeleted === 1) ? 1 : 0, // Corrección: asegurar 0 o 1
+      id
     );
 
     return result.changes > 0;
@@ -275,12 +269,11 @@ export class RegistersCacheService {
         licencia_numero, licencia_vencimiento, empresa_select, dominio,
         interno, c_matriculacion_venc, c_matriculacion_cert, seguro_venc,
         seguro_cert, rto_venc, rto_cert, tacografo_venc, tacografo_cert,
-        createdAt, updatedAt, _cached_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
+        isDeleted, createdAt, updatedAt, _cached_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
     `);
 
     try {
-      // CONVERSIÓN DE FECHAS A STRINGS (AGREGAR ESTO)
       const fecha = data.fecha instanceof Date ? data.fecha.toISOString() : data.fecha;
       const licenciaVencimiento = data.licencia_vencimiento ? new Date(data.licencia_vencimiento).toISOString() : null;
       const cMatriculacionVenc = data.c_matriculacion_venc instanceof Date ? data.c_matriculacion_venc.toISOString() : data.c_matriculacion_venc;
@@ -292,23 +285,24 @@ export class RegistersCacheService {
         id,
         data.userId,
         data.agente,
-        fecha,  // <-- Usar la variable convertida
+        fecha,
         data.lugar,
         data.conductor_nombre,
         data.licencia_tipo,
         data.licencia_numero,
-        licenciaVencimiento,  // <-- Usar la variable convertida
+        licenciaVencimiento,
         data.empresa_select,
         data.dominio,
         data.interno || null,
-        cMatriculacionVenc,  // <-- Usar la variable convertida
+        cMatriculacionVenc,
         data.c_matriculacion_cert || null,
-        seguroVenc,  // <-- Usar la variable convertida
+        seguroVenc,
         data.seguro_cert || null,
-        rtoVenc,  // <-- Usar la variable convertida
+        rtoVenc,
         data.rto_cert || null,
-        tacografoVenc,  // <-- Usar la variable convertida
-        data.tacografo_cert || null
+        tacografoVenc,
+        data.tacografo_cert || null,
+        (data.isDeleted === true || data.isDeleted === 1) ? 1 : 0 // Corrección: asegurar 0 o 1
       );
       return result.changes > 0;
     } catch (error: any) {
@@ -319,7 +313,6 @@ export class RegistersCacheService {
     }
   }
 
-  // NUEVO: Eliminar registro por ID temporal (para rollback)
   static async deleteRegistryByTempId(tempId: number): Promise<boolean> {
     const stmt = this.db.prepare(
       "DELETE FROM ControlRegister WHERE rowid = ?"
@@ -328,7 +321,6 @@ export class RegistersCacheService {
     return result.changes > 0;
   }
 
-  // NUEVO: Obtener registro por ID temporal (para rollback)
   static async getRegistryByTempId(tempId: number) {
     const stmt = this.db.prepare(
       "SELECT * FROM ControlRegister WHERE rowid = ?"
@@ -337,7 +329,6 @@ export class RegistersCacheService {
     return row ? this.stripCacheFields(row) : null;
   }
 
-  // NUEVO: Actualizar ID temporal con ID real de PostgreSQL
   static async updateTempIdToRealId(tempId: number, realId: number): Promise<boolean> {
     const stmt = this.db.prepare(`
       UPDATE ControlRegister 
@@ -348,9 +339,7 @@ export class RegistersCacheService {
     return result.changes > 0;
   }
 
-  // NUEVO: Sincronizar registro completo desde PostgreSQL
   static async syncFullRegistryFromPostgres(registry: any): Promise<void> {
-    // Primero verificar si existe
     const existing = await this.getRegistryById(registry.id);
 
     const registryData = {
@@ -375,7 +364,7 @@ export class RegistersCacheService {
       tacografo_cert: registry.tacografo_cert,
       createdAt: registry.createdAt,
       updatedAt: registry.updatedAt,
-      isDeleted: registry.isDeleted ? 1 : 0,
+      isDeleted: registry.isDeleted ? 1 : 0, // Corrección
       deletedAt: registry.deletedAt instanceof Date ? registry.deletedAt.toISOString() : registry.deletedAt
     };
 

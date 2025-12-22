@@ -395,7 +395,6 @@ export class RegistersService {
       // LUEGO: Actualizar SQLite cache
       console.log(`✏️ Sincronizando registro ${id} a SQLite cache...`);
       try {
-        // CORRECCIÓN ts(2662): Usamos 'updatedRegistry' (el resultado del update), no 'updateRegistry' (el método)
         const cacheData: dataControl = {
           userId: updatedRegistry.userId,
           agente: updatedRegistry.agente,
@@ -416,7 +415,7 @@ export class RegistersService {
           rto_cert: updatedRegistry.rto_cert,
           tacografo_venc: updatedRegistry.tacografo_venc,
           tacografo_cert: updatedRegistry.tacografo_cert,
-          isDeleted: updatedRegistry.isDeleted ? 1 : 0, 
+          isDeleted: (updatedRegistry.isDeleted === true || (updatedRegistry as any).isDeleted === 1) ? 1 : 0, // Corrección: Conversión boolean a integer
           deletedAt: updatedRegistry.deletedAt ? updatedRegistry.deletedAt.toISOString() : null
         };
 
@@ -643,8 +642,7 @@ export class RegistersService {
   
   private static async syncSingleToCache(registry: any): Promise<void> {
     try {
-      const existing = await RegistersCacheService.getRegistryById(registry.id);
-      
+      // Nota: Aquí se quitó la búsqueda previa en cache para asegurar que el update actualice el estado isDeleted
       // Mapear campos de Postgres a SQLite format (Dates -> Strings, Boolean -> Int)
       const cacheData: any = {
         userId: registry.userId,
@@ -666,13 +664,12 @@ export class RegistersService {
         rto_cert: registry.rto_cert,
         tacografo_venc: registry.tacografo_venc instanceof Date ? registry.tacografo_venc.toISOString() : registry.tacografo_venc,
         tacografo_cert: registry.tacografo_cert,
-        isDeleted: registry.isDeleted ? 1 : 0,
+        isDeleted: (registry.isDeleted === true || registry.isDeleted === 1) ? 1 : 0, // Corrección
         deletedAt: registry.deletedAt instanceof Date ? registry.deletedAt.toISOString() : registry.deletedAt
       };
       
-      if (existing) {
-        await RegistersCacheService.updateRegistry(registry.id, cacheData);
-      } else {
+      const success = await RegistersCacheService.updateRegistry(registry.id, cacheData);
+      if (!success) {
         await RegistersCacheService.createNewRegisterWithId(registry.id, cacheData);
       }
     } catch (error) {
