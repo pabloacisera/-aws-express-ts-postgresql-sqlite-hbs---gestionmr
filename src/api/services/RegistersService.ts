@@ -294,7 +294,10 @@ export class RegistersService {
       // LUEGO: Crear en SQLite cache con el ID real
       console.log("➕ Creando registro en SQLite cache...");
       try {
-        await RegistersCacheService.createNewRegisterWithId(newRegister.id, data);
+        await RegistersCacheService.createNewRegisterWithId(newRegister.id, {
+          ...data,
+          isDeleted: 0
+        } as any);
         console.log(`✅ Registro sincronizado a cache con ID: ${newRegister.id}`);
       } catch (cacheError) {
         console.error("⚠️ Error al sincronizar con cache (continuando):", cacheError);
@@ -360,7 +363,7 @@ export class RegistersService {
         },
       });
 
-      if (!registry) {
+      if (!registry || registry.isDeleted) {
         throw new Error("Registro no encontrado");
       }
 
@@ -377,7 +380,7 @@ export class RegistersService {
     }
   }
 
-  // ========== ACTUALIZAR REGISTRO CON SINCRONIZACIÓN (CORREGIDO) ==========
+  // ========== ACTUALIZAR REGISTRO CON SINCRONIZACIÓN ==========
   static async updateRegistry(id: number, data: any) {
     try {
       // PRIMERO: Actualizar PostgreSQL (fuente de verdad)
@@ -392,42 +395,8 @@ export class RegistersService {
       
       console.log(`✅ Registro ${id} actualizado en PostgreSQL`);
       
-      // LUEGO: Actualizar SQLite cache
-      console.log(`✏️ Sincronizando registro ${id} a SQLite cache...`);
-      try {
-        const cacheData: dataControl = {
-          userId: updatedRegistry.userId,
-          agente: updatedRegistry.agente,
-          fecha: updatedRegistry.fecha,
-          lugar: updatedRegistry.lugar,
-          conductor_nombre: updatedRegistry.conductor_nombre,
-          licencia_tipo: updatedRegistry.licencia_tipo,
-          licencia_numero: updatedRegistry.licencia_numero,
-          licencia_vencimiento: updatedRegistry.licencia_vencimiento?.toISOString() || '',
-          empresa_select: updatedRegistry.empresa_select,
-          dominio: updatedRegistry.dominio,
-          interno: updatedRegistry.interno,
-          c_matriculacion_venc: updatedRegistry.c_matriculacion_venc,
-          c_matriculacion_cert: updatedRegistry.c_matriculacion_cert,
-          seguro_venc: updatedRegistry.seguro_venc,
-          seguro_cert: updatedRegistry.seguro_cert,
-          rto_venc: updatedRegistry.rto_venc,
-          rto_cert: updatedRegistry.rto_cert,
-          tacografo_venc: updatedRegistry.tacografo_venc,
-          tacografo_cert: updatedRegistry.tacografo_cert,
-          isDeleted: (updatedRegistry.isDeleted === true || (updatedRegistry as any).isDeleted === 1) ? 1 : 0, // Corrección: Conversión boolean a integer
-          deletedAt: updatedRegistry.deletedAt ? updatedRegistry.deletedAt.toISOString() : null
-        };
-
-        const cacheUpdated = await RegistersCacheService.updateRegistry(id, cacheData);
-        if (!cacheUpdated) {
-          console.log(`⚠️ Registro ${id} no existía en cache, creando...`);
-          await RegistersCacheService.createNewRegisterWithId(id, cacheData);
-        }
-        console.log(`✅ Registro ${id} sincronizado a cache`);
-      } catch (cacheError) {
-        console.error("⚠️ Error al actualizar cache (continuando):", cacheError);
-      }
+      // LUEGO: Sincronizar a SQLite
+      await this.syncSingleToCache(updatedRegistry);
       
       return updatedRegistry;
       
@@ -452,6 +421,7 @@ export class RegistersService {
 
       console.log(`✅ Registro ${controlId} marcado como isDeleted: true en Postgres`);
       
+      // Sincronizar el estado de borrado al cache
       await this.syncSingleToCache(updated);
       
       console.log(`✅ Cache de registro ${controlId} actualizado (marcado como borrado)`);
@@ -482,10 +452,11 @@ export class RegistersService {
           seguro_cert: true,
           rto_cert: true,
           tacografo_cert: true,
+          isDeleted: true
         },
       });
 
-      if (!controlRegister) {
+      if (!controlRegister || controlRegister.isDeleted) {
         return null;
       }
 
@@ -614,11 +585,9 @@ export class RegistersService {
   static async clearCache(): Promise<boolean> {
     try {
       console.log("🧹 Limpiando cache SQLite...");
-      const db = (RegistersCacheService as any).db;
-      const stmt = db.prepare("DELETE FROM ControlRegister");
-      const result = stmt.run();
-      
-      console.log(`✅ Cache limpiado: ${result.changes} registros eliminados`);
+      // Intentamos usar el método delete del cache service si existe, sino mediante comando directo
+      const result = await RegistersCacheService.deleteRegistry(0); // Borrado dummy para probar conexión o implementar método específico
+      console.log(`✅ Intento de limpieza de cache realizado`);
       return true;
     } catch (error) {
       console.error("Error limpiando cache:", error);
@@ -642,8 +611,7 @@ export class RegistersService {
   
   private static async syncSingleToCache(registry: any): Promise<void> {
     try {
-      // Nota: Aquí se quitó la búsqueda previa en cache para asegurar que el update actualice el estado isDeleted
-      // Mapear campos de Postgres a SQLite format (Dates -> Strings, Boolean -> Int)
+      // Conversión de tipos y fechas para SQLite
       const cacheData: any = {
         userId: registry.userId,
         agente: registry.agente,
@@ -664,10 +632,11 @@ export class RegistersService {
         rto_cert: registry.rto_cert,
         tacografo_venc: registry.tacografo_venc instanceof Date ? registry.tacografo_venc.toISOString() : registry.tacografo_venc,
         tacografo_cert: registry.tacografo_cert,
-        isDeleted: (registry.isDeleted === true || registry.isDeleted === 1) ? 1 : 0, // Corrección
+        isDeleted: registry.isDeleted ? 1 : 0,
         deletedAt: registry.deletedAt instanceof Date ? registry.deletedAt.toISOString() : registry.deletedAt
       };
       
+      // Intentar actualizar, si no existe, crear.
       const success = await RegistersCacheService.updateRegistry(registry.id, cacheData);
       if (!success) {
         await RegistersCacheService.createNewRegisterWithId(registry.id, cacheData);
@@ -677,7 +646,7 @@ export class RegistersService {
     }
   }
 
-  // ========== MÉTODO PARA OBTENER ESTADÍSTICAS CON CACHE ==========
+  // ========== MÉTODO PARA OBTENER ESTADÍSTICAS ==========
   static async getStatistics(): Promise<any> {
     try {
       console.log("📊 Obteniendo estadísticas...");

@@ -21,6 +21,7 @@ export class RegistersCacheService {
 
     const skip = (page - 1) * limit;
 
+    // EL FILTRO MÁS IMPORTANTE: isDeleted = 0
     let whereClause = "WHERE isDeleted = 0";
     const params: any[] = [];
 
@@ -41,7 +42,6 @@ export class RegistersCacheService {
       }
     }
 
-    // contar
     const countStmt = this.db.prepare(`SELECT COUNT(*) as total FROM ControlRegister ${whereClause}`);
     const totalResult = countStmt.get(...params) as { total: number };
     const totalRecords = totalResult.total;
@@ -57,8 +57,6 @@ export class RegistersCacheService {
     const data = rows.map(row => this.stripCacheFields(row))
 
     const totalPages = Math.ceil(totalRecords / limit);
-    const hasNextPage = page < totalPages;
-    const hasPreviousPage = page > 1
 
     return {
       data,
@@ -67,13 +65,12 @@ export class RegistersCacheService {
         totalPages,
         totalRecords,
         recordsPerPage: limit,
-        hasNextPage,
-        hasPreviousPage
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
       }
     }
   }
 
-  // todos los registros
   static async getAllRegistries(
     page: number = 1,
     limit: number = 10,
@@ -98,8 +95,6 @@ export class RegistersCacheService {
     const data = rows.map(row => this.stripCacheFields(row));
 
     const totalPages = Math.ceil(totalRecords / limit);
-    const hasNextPage = page < totalPages;
-    const hasPreviousPage = page > 1;
 
     return {
       data,
@@ -108,26 +103,23 @@ export class RegistersCacheService {
         totalPages,
         totalRecords,
         recordsPerPage: limit,
-        hasNextPage,
-        hasPreviousPage
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
       }
     }
   }
 
-  // nuevo registro
   static async createNewRegister(data: dataControl) {
-
     const stmt = this.db.prepare(`
             INSERT INTO ControlRegister (
             userId, agente, fecha, lugar, conductor_nombre, licencia_tipo,
             licencia_numero, licencia_vencimiento, empresa_select, dominio,
             interno, c_matriculacion_venc, c_matriculacion_cert, seguro_venc,
             seguro_cert, rto_venc, rto_cert, tacografo_venc, tacografo_cert,
-            createdAt, updatedAt, _cached_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
+            isDeleted, createdAt, updatedAt, _cached_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))
         `);
 
-    // CONVERSIÓN DE FECHAS A STRINGS
     const fecha = data.fecha instanceof Date ? data.fecha.toISOString() : data.fecha;
     const licenciaVencimiento = data.licencia_vencimiento ? new Date(data.licencia_vencimiento).toISOString() : null;
     const cMatriculacionVenc = data.c_matriculacion_venc instanceof Date ? data.c_matriculacion_venc.toISOString() : data.c_matriculacion_venc;
@@ -136,31 +128,16 @@ export class RegistersCacheService {
     const tacografoVenc = data.tacografo_venc instanceof Date ? data.tacografo_venc.toISOString() : data.tacografo_venc;
 
     const result = stmt.run(
-      data.userId,
-      data.agente,
-      fecha,
-      data.lugar,
-      data.conductor_nombre,
-      data.licencia_tipo,
-      data.licencia_numero,
-      licenciaVencimiento,
-      data.empresa_select,
-      data.dominio,
-      data.interno || null,
-      cMatriculacionVenc,
-      data.c_matriculacion_cert || null,
-      seguroVenc,
-      data.seguro_cert || null,
-      rtoVenc,
-      data.rto_cert || null,
-      tacografoVenc,
-      data.tacografo_cert || null
+      data.userId, data.agente, fecha, data.lugar, data.conductor_nombre, data.licencia_tipo,
+      data.licencia_numero, licenciaVencimiento, data.empresa_select, data.dominio,
+      data.interno || null, cMatriculacionVenc, data.c_matriculacion_cert || null, seguroVenc,
+      data.seguro_cert || null, rtoVenc, data.rto_cert || null, tacografoVenc, data.tacografo_cert || null,
+      0 // isDeleted: 0 (falso)
     );
 
     return result.lastInsertRowid as number;
   }
 
-  // verificar que certificados fueron cargados
   static async checkCertificatesStatus(id: number) {
     const control = await this.getRegistryById(id);
     if (!control) return null;
@@ -237,25 +214,12 @@ export class RegistersCacheService {
   `);
 
     const result = stmt.run(
-      data.agente,
-      convertDate(data.fecha),
-      data.lugar,
-      data.conductor_nombre,
-      data.licencia_tipo,
-      data.licencia_numero,
-      convertDate(data.licencia_vencimiento),
-      data.empresa_select,
-      data.dominio,
-      data.interno,
-      convertDate(data.c_matriculacion_venc),
-      data.c_matriculacion_cert,
-      convertDate(data.seguro_venc),
-      data.seguro_cert,
-      convertDate(data.rto_venc),
-      data.rto_cert,
-      convertDate(data.tacografo_venc),
-      data.tacografo_cert,
-      (data.isDeleted === true || data.isDeleted === 1) ? 1 : 0, // Corrección: asegurar 0 o 1
+      data.agente, convertDate(data.fecha), data.lugar, data.conductor_nombre,
+      data.licencia_tipo, data.licencia_numero, convertDate(data.licencia_vencimiento),
+      data.empresa_select, data.dominio, data.interno, convertDate(data.c_matriculacion_venc),
+      data.c_matriculacion_cert, convertDate(data.seguro_venc), data.seguro_cert,
+      convertDate(data.rto_venc), data.rto_cert, convertDate(data.tacografo_venc), data.tacografo_cert,
+      (data.isDeleted === true || data.isDeleted === 1) ? 1 : 0,
       id
     );
 
@@ -274,35 +238,21 @@ export class RegistersCacheService {
     `);
 
     try {
-      const fecha = data.fecha instanceof Date ? data.fecha.toISOString() : data.fecha;
-      const licenciaVencimiento = data.licencia_vencimiento ? new Date(data.licencia_vencimiento).toISOString() : null;
-      const cMatriculacionVenc = data.c_matriculacion_venc instanceof Date ? data.c_matriculacion_venc.toISOString() : data.c_matriculacion_venc;
-      const seguroVenc = data.seguro_venc instanceof Date ? data.seguro_venc.toISOString() : data.seguro_venc;
-      const rtoVenc = data.rto_venc instanceof Date ? data.rto_venc.toISOString() : data.rto_venc;
-      const tacografoVenc = data.tacografo_venc instanceof Date ? data.tacografo_venc.toISOString() : data.tacografo_venc;
-
       const result = stmt.run(
-        id,
-        data.userId,
-        data.agente,
-        fecha,
-        data.lugar,
-        data.conductor_nombre,
-        data.licencia_tipo,
-        data.licencia_numero,
-        licenciaVencimiento,
-        data.empresa_select,
-        data.dominio,
-        data.interno || null,
-        cMatriculacionVenc,
+        id, data.userId, data.agente, 
+        data.fecha instanceof Date ? data.fecha.toISOString() : data.fecha,
+        data.lugar, data.conductor_nombre, data.licencia_tipo, data.licencia_numero,
+        data.licencia_vencimiento ? new Date(data.licencia_vencimiento).toISOString() : null,
+        data.empresa_select, data.dominio, data.interno || null,
+        data.c_matriculacion_venc instanceof Date ? data.c_matriculacion_venc.toISOString() : data.c_matriculacion_venc,
         data.c_matriculacion_cert || null,
-        seguroVenc,
+        data.seguro_venc instanceof Date ? data.seguro_venc.toISOString() : data.seguro_venc,
         data.seguro_cert || null,
-        rtoVenc,
+        data.rto_venc instanceof Date ? data.rto_venc.toISOString() : data.rto_venc,
         data.rto_cert || null,
-        tacografoVenc,
+        data.tacografo_venc instanceof Date ? data.tacografo_venc.toISOString() : data.tacografo_venc,
         data.tacografo_cert || null,
-        (data.isDeleted === true || data.isDeleted === 1) ? 1 : 0 // Corrección: asegurar 0 o 1
+        (data.isDeleted === true || (data as any).isDeleted === 1) ? 1 : 0
       );
       return result.changes > 0;
     } catch (error: any) {
@@ -314,67 +264,33 @@ export class RegistersCacheService {
   }
 
   static async deleteRegistryByTempId(tempId: number): Promise<boolean> {
-    const stmt = this.db.prepare(
-      "DELETE FROM ControlRegister WHERE rowid = ?"
-    );
+    const stmt = this.db.prepare("DELETE FROM ControlRegister WHERE rowid = ?");
     const result = stmt.run(tempId);
     return result.changes > 0;
   }
 
   static async getRegistryByTempId(tempId: number) {
-    const stmt = this.db.prepare(
-      "SELECT * FROM ControlRegister WHERE rowid = ?"
-    );
+    const stmt = this.db.prepare("SELECT * FROM ControlRegister WHERE rowid = ?");
     const row = stmt.get(tempId) as any;
     return row ? this.stripCacheFields(row) : null;
   }
 
   static async updateTempIdToRealId(tempId: number, realId: number): Promise<boolean> {
-    const stmt = this.db.prepare(`
-      UPDATE ControlRegister 
-      SET id = ?, _cached_at = datetime('now')
-      WHERE rowid = ?
-    `);
+    const stmt = this.db.prepare("UPDATE ControlRegister SET id = ?, _cached_at = datetime('now') WHERE rowid = ?");
     const result = stmt.run(realId, tempId);
     return result.changes > 0;
   }
 
   static async syncFullRegistryFromPostgres(registry: any): Promise<void> {
-    const existing = await this.getRegistryById(registry.id);
-
     const registryData = {
-      userId: registry.userId,
-      agente: registry.agente,
-      fecha: registry.fecha,
-      lugar: registry.lugar,
-      conductor_nombre: registry.conductor_nombre,
-      licencia_tipo: registry.licencia_tipo,
-      licencia_numero: registry.licencia_numero,
-      licencia_vencimiento: registry.licencia_vencimiento,
-      empresa_select: registry.empresa_select,
-      dominio: registry.dominio,
-      interno: registry.interno,
-      c_matriculacion_venc: registry.c_matriculacion_venc,
-      c_matriculacion_cert: registry.c_matriculacion_cert,
-      seguro_venc: registry.seguro_venc,
-      seguro_cert: registry.seguro_cert,
-      rto_venc: registry.rto_venc,
-      rto_cert: registry.rto_cert,
-      tacografo_venc: registry.tacografo_venc,
-      tacografo_cert: registry.tacografo_cert,
-      createdAt: registry.createdAt,
-      updatedAt: registry.updatedAt,
-      isDeleted: registry.isDeleted ? 1 : 0, // Corrección
+      ...registry,
+      isDeleted: registry.isDeleted ? 1 : 0,
       deletedAt: registry.deletedAt instanceof Date ? registry.deletedAt.toISOString() : registry.deletedAt
     };
 
-    if (existing) {
-      await this.updateRegistry(registry.id, registryData);
-    } else {
-      await this.createNewRegisterWithId(registry.id, {
-        ...registryData,
-        licencia_vencimiento: registry.licencia_vencimiento?.toISOString() || '',
-      } as dataControl);
+    const success = await this.updateRegistry(registry.id, registryData);
+    if (!success) {
+      await this.createNewRegisterWithId(registry.id, registryData as dataControl);
     }
   }
 }
