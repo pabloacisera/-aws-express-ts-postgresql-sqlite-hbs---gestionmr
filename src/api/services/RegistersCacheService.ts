@@ -25,6 +25,7 @@ export class RegistersCacheService {
     const params: any[] = [];
 
     if (searchTerm.trim()) {
+      const likeTerm = `%${searchTerm}%`;
       if (searchField === "all") {
         whereClause += `
                 AND (conductor_nombre LIKE ? OR
@@ -33,24 +34,24 @@ export class RegistersCacheService {
                     dominio LIKE ? OR
                     agente LIKE ?
                     )`;
-
-        const likeTerm = `%${searchTerm}%`;
         params.push(likeTerm, likeTerm, likeTerm, likeTerm, likeTerm);
       } else {
-        whereClause += `AND ${searchField} LIKE ?`;
-        params.push(`%${searchTerm}%`);
+        whereClause += ` AND ${searchField} LIKE ?`;
+        params.push(likeTerm);
       }
     }
 
     // contar
     const countStmt = this.db.prepare(`SELECT COUNT(*) as total FROM ControlRegister ${whereClause}`);
-    const totalResult = countStmt.get(...params) as { total: number }
+    const totalResult = countStmt.get(...params) as { total: number };
     const totalRecords = totalResult.total;
 
-    // obtener datos
     const stmt = this.db.prepare(`
-                SELECT * FROM ControlRegister ${whereClause} ORDER BY createdAt DESC LIMIT ? OFFSET ?
-            `);
+      SELECT * FROM ControlRegister 
+      ${whereClause}
+      ORDER BY createdAt DESC
+      LIMIT ? OFFSET ?
+    `);
 
     const rows = stmt.all(...params, limit, skip) as any[];
     const data = rows.map(row => this.stripCacheFields(row))
@@ -81,7 +82,7 @@ export class RegistersCacheService {
     const skip = (page - 1) * limit;
 
     const countStmt = this.db.prepare(`
-                SELECT COUNT(*) as total FROM ControlRegister
+                SELECT COUNT(*) as total FROM ControlRegister WHERE isDeleted = 0
             `);
     const totalResult = countStmt.get() as { total: number };
     const totalRecords = totalResult.total;
@@ -185,7 +186,7 @@ export class RegistersCacheService {
 
   static async getRegistryById(id: number) {
     const stmt = this.db.prepare(
-      "SELECT * FROM ControlRegister WHERE id = ?"
+      "SELECT * FROM ControlRegister WHERE id = ? AND isDeleted = 0"
     );
 
     const row = stmt.get(id) as any;
@@ -368,7 +369,9 @@ export class RegistersCacheService {
       tacografo_venc: registry.tacografo_venc,
       tacografo_cert: registry.tacografo_cert,
       createdAt: registry.createdAt,
-      updatedAt: registry.updatedAt
+      updatedAt: registry.updatedAt,
+      isDeleted: registry.isDeleted ? 1 : 0,
+      deletedAt: registry.deletedAt instanceof Date ? registry.deletedAt.toISOString() : registry.deletedAt
     };
 
     if (existing) {

@@ -165,9 +165,10 @@ export class RegistersService {
       
       // Si no hay en cache, consultar PostgreSQL
       const skip = (page - 1) * limit;
-      const totalRecords = await prisma.controlRegister.count();
+      const totalRecords = await prisma.controlRegister.count({ where: { isDeleted: false } });
 
       const results = await prisma.controlRegister.findMany({
+        where: { isDeleted: false },
         skip: skip,
         take: limit,
         include: {
@@ -266,7 +267,7 @@ export class RegistersService {
         data: {
           userId: data.userId,
           agente: data.agente,
-          fecha: data.fecha ?? null,
+          fecha: data.fecha ? new Date(data.fecha) : null,
           lugar: data.lugar,
           conductor_nombre: data.conductor_nombre,
           licencia_tipo: data.licencia_tipo,
@@ -277,15 +278,15 @@ export class RegistersService {
           empresa_select: data.empresa_select,
           dominio: data.dominio,
           interno: data.interno ?? null,
-          c_matriculacion_venc: data.c_matriculacion_venc ?? null,
+          c_matriculacion_venc: data.c_matriculacion_venc ? new Date(data.c_matriculacion_venc) : null,
           c_matriculacion_cert: data.c_matriculacion_cert ?? null,
-          seguro_venc: data.seguro_venc ?? null,
+          seguro_venc: data.seguro_venc ? new Date(data.seguro_venc) : null,
           seguro_cert: data.seguro_cert ?? null,
-          rto_venc: data.rto_venc ?? null,
+          rto_venc: data.rto_venc ? new Date(data.rto_venc) : null,
           rto_cert: data.rto_cert ?? null,
-          tacografo_venc: data.tacografo_venc ?? null,
+          tacografo_venc: data.tacografo_venc ? new Date(data.tacografo_venc) : null,
           tacografo_cert: data.tacografo_cert ?? null,
-        },
+        } as any,
       });
 
       console.log(`✅ Registro creado en PostgreSQL con ID: ${newRegister.id}`);
@@ -297,7 +298,6 @@ export class RegistersService {
         console.log(`✅ Registro sincronizado a cache con ID: ${newRegister.id}`);
       } catch (cacheError) {
         console.error("⚠️ Error al sincronizar con cache (continuando):", cacheError);
-        // No fallamos la operación principal si el cache falla
       }
       
       return newRegister;
@@ -348,6 +348,8 @@ export class RegistersService {
           tacografo_cert: true,
           createdAt: true,
           updatedAt: true,
+          isDeleted: true,
+          deletedAt: true,
           user: {
             select: {
               id: true,
@@ -375,7 +377,7 @@ export class RegistersService {
     }
   }
 
-  // ========== ACTUALIZAR REGISTRO CON SINCRONIZACIÓN ==========
+  // ========== ACTUALIZAR REGISTRO CON SINCRONIZACIÓN (CORREGIDO) ==========
   static async updateRegistry(id: number, data: any) {
     try {
       // PRIMERO: Actualizar PostgreSQL (fuente de verdad)
@@ -393,37 +395,39 @@ export class RegistersService {
       // LUEGO: Actualizar SQLite cache
       console.log(`✏️ Sincronizando registro ${id} a SQLite cache...`);
       try {
-        const cacheUpdated = await RegistersCacheService.updateRegistry(id, data);
+        // CORRECCIÓN ts(2662): Usamos 'updatedRegistry' (el resultado del update), no 'updateRegistry' (el método)
+        const cacheData: dataControl = {
+          userId: updatedRegistry.userId,
+          agente: updatedRegistry.agente,
+          fecha: updatedRegistry.fecha,
+          lugar: updatedRegistry.lugar,
+          conductor_nombre: updatedRegistry.conductor_nombre,
+          licencia_tipo: updatedRegistry.licencia_tipo,
+          licencia_numero: updatedRegistry.licencia_numero,
+          licencia_vencimiento: updatedRegistry.licencia_vencimiento?.toISOString() || '',
+          empresa_select: updatedRegistry.empresa_select,
+          dominio: updatedRegistry.dominio,
+          interno: updatedRegistry.interno,
+          c_matriculacion_venc: updatedRegistry.c_matriculacion_venc,
+          c_matriculacion_cert: updatedRegistry.c_matriculacion_cert,
+          seguro_venc: updatedRegistry.seguro_venc,
+          seguro_cert: updatedRegistry.seguro_cert,
+          rto_venc: updatedRegistry.rto_venc,
+          rto_cert: updatedRegistry.rto_cert,
+          tacografo_venc: updatedRegistry.tacografo_venc,
+          tacografo_cert: updatedRegistry.tacografo_cert,
+          isDeleted: updatedRegistry.isDeleted ? 1 : 0, 
+          deletedAt: updatedRegistry.deletedAt ? updatedRegistry.deletedAt.toISOString() : null
+        };
+
+        const cacheUpdated = await RegistersCacheService.updateRegistry(id, cacheData);
         if (!cacheUpdated) {
           console.log(`⚠️ Registro ${id} no existía en cache, creando...`);
-          // Si no existe en cache, crear con los datos actualizados
-          const cacheData: dataControl = {
-            userId: updatedRegistry.userId,
-            agente: updatedRegistry.agente,
-            fecha: updatedRegistry.fecha,
-            lugar: updatedRegistry.lugar,
-            conductor_nombre: updatedRegistry.conductor_nombre,
-            licencia_tipo: updatedRegistry.licencia_tipo,
-            licencia_numero: updatedRegistry.licencia_numero,
-            licencia_vencimiento: updatedRegistry.licencia_vencimiento?.toISOString() || '',
-            empresa_select: updatedRegistry.empresa_select,
-            dominio: updatedRegistry.dominio,
-            interno: updatedRegistry.interno,
-            c_matriculacion_venc: updatedRegistry.c_matriculacion_venc,
-            c_matriculacion_cert: updatedRegistry.c_matriculacion_cert,
-            seguro_venc: updatedRegistry.seguro_venc,
-            seguro_cert: updatedRegistry.seguro_cert,
-            rto_venc: updatedRegistry.rto_venc,
-            rto_cert: updatedRegistry.rto_cert,
-            tacografo_venc: updatedRegistry.tacografo_venc,
-            tacografo_cert: updatedRegistry.tacografo_cert,
-          };
           await RegistersCacheService.createNewRegisterWithId(id, cacheData);
         }
         console.log(`✅ Registro ${id} sincronizado a cache`);
       } catch (cacheError) {
         console.error("⚠️ Error al actualizar cache (continuando):", cacheError);
-        // No fallamos la operación principal si el cache falla
       }
       
       return updatedRegistry;
@@ -437,23 +441,9 @@ export class RegistersService {
   // ========== ELIMINAR REGISTRO CON SINCRONIZACIÓN ==========
   static async deleteRegistry(controlId: number) {
     try {
-      // PRIMERO: Eliminar de PostgreSQL (fuente de verdad)
-      console.log(`🗑️ Eliminando registro ${controlId} de PostgreSQL...`);
+      console.log(`🗑️ Iniciando borrado lógico del registro ${controlId}...`);
       
-      const exists = await prisma.controlRegister.findUnique({
-        where: { id: controlId },
-      });
-
-      if (!exists) {
-        throw new Error("Registro no encontrado");
-      }
-
-      // eliminar certificados primero
-      await prisma.certificateDocument.deleteMany({
-        where: { controlId },
-      });
-
-      await prisma.controlRegister.update({
+      const updated = await prisma.controlRegister.update({
         where: { id: controlId },
         data: {
           isDeleted: true,
@@ -461,23 +451,13 @@ export class RegistersService {
         }
       });
 
-      console.log(`✅ Registro ${controlId} eliminado de PostgreSQL`);
+      console.log(`✅ Registro ${controlId} marcado como isDeleted: true en Postgres`);
       
-      // LUEGO: Eliminar de SQLite cache
-      console.log(`🗑️ Eliminando registro ${controlId} de SQLite cache...`);
-      try {
-        const cacheDeleted = await RegistersCacheService.deleteRegistry(controlId);
-        console.log(cacheDeleted ? 
-          `✅ Eliminado de cache` : 
-          `⚠️ No existía en cache`
-        );
-      } catch (cacheError) {
-        console.error("⚠️ Error al eliminar de cache (continuando):", cacheError);
-        // No fallamos la operación principal si el cache falla
-      }
+      await this.syncSingleToCache(updated);
+      
+      console.log(`✅ Cache de registro ${controlId} actualizado (marcado como borrado)`);
       
       return true;
-      
     } catch (err) {
       console.error("Error al eliminar el registro:", err);
       throw new Error("No se pudo eliminar el registro");
@@ -487,14 +467,12 @@ export class RegistersService {
   // ========== VERIFICAR ESTADO DE CERTIFICADOS ==========
   static async checkCertificatesStatus(id: number) {
     try {
-      // PRIMERO: Intentar desde cache
       const cacheStatus = await RegistersCacheService.checkCertificatesStatus(id);
       if (cacheStatus !== null) {
         console.log(`✅ Estado de certificados ${id} desde cache`);
         return cacheStatus;
       }
       
-      // SI NO: Consultar PostgreSQL
       console.log(`🔍 Estado de certificados ${id} no en cache, consultando PostgreSQL...`);
       
       const controlRegister = await prisma.controlRegister.findUnique({
@@ -532,7 +510,6 @@ export class RegistersService {
         ],
       };
 
-      // Guardar en cache para futuras consultas
       this.syncSingleToCache(controlRegister).catch(err =>
         console.error(`Error guardando estado de certificados ${id} en cache:`, err)
       );
@@ -547,15 +524,11 @@ export class RegistersService {
   // ========== OBTENER NÚMEROS DE CERTIFICADOS ==========
   static async getCertificateNumbersById(id: number) {
     try {
-      // PRIMERO: Cache
       const cacheNumbers = await RegistersCacheService.getCertificateNumbersById(id);
       if (cacheNumbers) {
         console.log(`✅ Números de certificado ${id} desde cache`);
         return cacheNumbers;
       }
-      
-      // SI NO: PostgreSQL
-      console.log(`🔍 Números de certificado ${id} no en cache, consultando PostgreSQL...`);
       
       const registry = await prisma.controlRegister.findUnique({
         where: { id, isDeleted: false },
@@ -579,7 +552,6 @@ export class RegistersService {
         tacografo_cert: registry.tacografo_cert,
       };
 
-      // Guardar en cache para futuras consultas
       this.syncSingleToCache(registry).catch(err =>
         console.error(`Error guardando números de certificado ${id} en cache:`, err)
       );
@@ -643,9 +615,6 @@ export class RegistersService {
   static async clearCache(): Promise<boolean> {
     try {
       console.log("🧹 Limpiando cache SQLite...");
-      
-      // Necesitarías implementar un método clearAll en RegistersCacheService
-      // Por ahora, podemos eliminar todos los registros
       const db = (RegistersCacheService as any).db;
       const stmt = db.prepare("DELETE FROM ControlRegister");
       const result = stmt.run();
@@ -663,71 +632,47 @@ export class RegistersService {
   private static async syncResultsToCache(results: any[]): Promise<void> {
     try {
       console.log(`🔄 Sincronizando ${results.length} registros a SQLite cache...`);
-      
       for (const result of results) {
         await this.syncSingleToCache(result);
       }
-      
       console.log(`✅ ${results.length} registros sincronizados a cache`);
     } catch (error) {
       console.error("Error en syncResultsToCache:", error);
-      // No lanzamos error para no afectar la respuesta principal
     }
   }
   
   private static async syncSingleToCache(registry: any): Promise<void> {
     try {
-      // Verificar si ya existe en cache
       const existing = await RegistersCacheService.getRegistryById(registry.id);
       
+      // Mapear campos de Postgres a SQLite format (Dates -> Strings, Boolean -> Int)
+      const cacheData: any = {
+        userId: registry.userId,
+        agente: registry.agente,
+        fecha: registry.fecha instanceof Date ? registry.fecha.toISOString() : registry.fecha,
+        lugar: registry.lugar,
+        conductor_nombre: registry.conductor_nombre,
+        licencia_tipo: registry.licencia_tipo,
+        licencia_numero: registry.licencia_numero,
+        licencia_vencimiento: registry.licencia_vencimiento instanceof Date ? registry.licencia_vencimiento.toISOString() : registry.licencia_vencimiento,
+        empresa_select: registry.empresa_select,
+        dominio: registry.dominio,
+        interno: registry.interno,
+        c_matriculacion_venc: registry.c_matriculacion_venc instanceof Date ? registry.c_matriculacion_venc.toISOString() : registry.c_matriculacion_venc,
+        c_matriculacion_cert: registry.c_matriculacion_cert,
+        seguro_venc: registry.seguro_venc instanceof Date ? registry.seguro_venc.toISOString() : registry.seguro_venc,
+        seguro_cert: registry.seguro_cert,
+        rto_venc: registry.rto_venc instanceof Date ? registry.rto_venc.toISOString() : registry.rto_venc,
+        rto_cert: registry.rto_cert,
+        tacografo_venc: registry.tacografo_venc instanceof Date ? registry.tacografo_venc.toISOString() : registry.tacografo_venc,
+        tacografo_cert: registry.tacografo_cert,
+        isDeleted: registry.isDeleted ? 1 : 0,
+        deletedAt: registry.deletedAt instanceof Date ? registry.deletedAt.toISOString() : registry.deletedAt
+      };
+      
       if (existing) {
-        // Actualizar - CONVERTIR FECHAS PRIMERO
-        const dataWithConvertedDates = { ...registry };
-        // Convertir fechas Date a strings ISO
-        if (dataWithConvertedDates.fecha instanceof Date) {
-          dataWithConvertedDates.fecha = dataWithConvertedDates.fecha.toISOString();
-        }
-        if (dataWithConvertedDates.licencia_vencimiento instanceof Date) {
-          dataWithConvertedDates.licencia_vencimiento = dataWithConvertedDates.licencia_vencimiento.toISOString();
-        }
-        if (dataWithConvertedDates.c_matriculacion_venc instanceof Date) {
-          dataWithConvertedDates.c_matriculacion_venc = dataWithConvertedDates.c_matriculacion_venc.toISOString();
-        }
-        if (dataWithConvertedDates.seguro_venc instanceof Date) {
-          dataWithConvertedDates.seguro_venc = dataWithConvertedDates.seguro_venc.toISOString();
-        }
-        if (dataWithConvertedDates.rto_venc instanceof Date) {
-          dataWithConvertedDates.rto_venc = dataWithConvertedDates.rto_venc.toISOString();
-        }
-        if (dataWithConvertedDates.tacografo_venc instanceof Date) {
-          dataWithConvertedDates.tacografo_venc = dataWithConvertedDates.tacografo_venc.toISOString();
-        }
-        
-        await RegistersCacheService.updateRegistry(registry.id, dataWithConvertedDates);
+        await RegistersCacheService.updateRegistry(registry.id, cacheData);
       } else {
-        // Crear
-        const cacheData: dataControl = {
-          userId: registry.userId,
-          agente: registry.agente,
-          fecha: registry.fecha instanceof Date ? registry.fecha.toISOString() : registry.fecha,
-          lugar: registry.lugar,
-          conductor_nombre: registry.conductor_nombre,
-          licencia_tipo: registry.licencia_tipo,
-          licencia_numero: registry.licencia_numero,
-          licencia_vencimiento: registry.licencia_vencimiento?.toISOString() || '',
-          empresa_select: registry.empresa_select,
-          dominio: registry.dominio,
-          interno: registry.interno,
-          c_matriculacion_venc: registry.c_matriculacion_venc instanceof Date ? registry.c_matriculacion_venc.toISOString() : registry.c_matriculacion_venc,
-          c_matriculacion_cert: registry.c_matriculacion_cert,
-          seguro_venc: registry.seguro_venc instanceof Date ? registry.seguro_venc.toISOString() : registry.seguro_venc,
-          seguro_cert: registry.seguro_cert,
-          rto_venc: registry.rto_venc instanceof Date ? registry.rto_venc.toISOString() : registry.rto_venc,
-          rto_cert: registry.rto_cert,
-          tacografo_venc: registry.tacografo_venc instanceof Date ? registry.tacografo_venc.toISOString() : registry.tacografo_venc,
-          tacografo_cert: registry.tacografo_cert,
-        };
-        
         await RegistersCacheService.createNewRegisterWithId(registry.id, cacheData);
       }
     } catch (error) {
@@ -739,11 +684,10 @@ export class RegistersService {
   static async getStatistics(): Promise<any> {
     try {
       console.log("📊 Obteniendo estadísticas...");
-      
-      // Obtener estadísticas básicas
-      const totalRegistries = await prisma.controlRegister.count();
+      const totalRegistries = await prisma.controlRegister.count({ where: { isDeleted: false } });
       const totalWithCertificates = await prisma.controlRegister.count({
         where: {
+          isDeleted: false,
           OR: [
             { c_matriculacion_cert: { not: null } },
             { seguro_cert: { not: null } },
@@ -753,26 +697,17 @@ export class RegistersService {
         },
       });
 
-      // Contar por tipo de licencia
       const licenseStats = await prisma.controlRegister.groupBy({
         by: ['licencia_tipo'],
-        _count: {
-          licencia_tipo: true,
-        },
+        where: { isDeleted: false },
+        _count: { licencia_tipo: true },
       });
 
-      // Últimos registros creados
       const recentRegistries = await prisma.controlRegister.findMany({
+        where: { isDeleted: false },
         take: 5,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        select: {
-          id: true,
-          conductor_nombre: true,
-          empresa_select: true,
-          createdAt: true,
-        },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, conductor_nombre: true, empresa_select: true, createdAt: true },
       });
 
       return {
