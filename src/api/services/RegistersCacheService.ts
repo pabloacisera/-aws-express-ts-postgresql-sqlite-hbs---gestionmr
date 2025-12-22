@@ -88,8 +88,11 @@ export class RegistersCacheService {
     const totalRecords = totalResult.total;
 
     const stmt = this.db.prepare(`
-                SELECT * FROM ControlRegister ORDER BY createdAt DESC LIMIT ? OFFSET ?
-            `);
+        SELECT * FROM ControlRegister 
+        WHERE isDeleted = 0 
+        ORDER BY createdAt DESC 
+        LIMIT ? OFFSET ?
+    `);
 
     const rows = stmt.all(limit, skip) as any[];
     const data = rows.map(row => this.stripCacheFields(row));
@@ -234,6 +237,7 @@ export class RegistersCacheService {
         seguro_venc = ?, seguro_cert = ?,
         rto_venc = ?, rto_cert = ?,
         tacografo_venc = ?, tacografo_cert = ?,
+        isDeleted = ?,
         updatedAt = datetime('now'), _cached_at = datetime('now')
       WHERE id = ?
     `);
@@ -257,7 +261,8 @@ export class RegistersCacheService {
       data.rto_cert,
       convertDate(data.tacografo_venc),  // <-- Usar la función de conversión
       data.tacografo_cert,
-      id
+      id,
+      data.isDeleted ? 1 : 0
     );
 
     return result.changes > 0;
