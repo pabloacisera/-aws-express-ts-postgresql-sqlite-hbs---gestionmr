@@ -103,7 +103,7 @@ export class AuthController {
              */
             CookieHelper.deleteCookie(res, 'auth');
             
-            res.redirect('/');
+            res.redirect(environment.base_url);
 
         } catch (error: any) {
             console.error('Error en logout:', error);
@@ -151,7 +151,7 @@ export class AuthController {
                 });
 
                 // Redirigir a home con mensaje de éxito
-                return res.redirect('/?activated=true');
+                return res.redirect(`${environment.base_url}/?activated=true`);
             } else {
                 return res.status(400).render('activation_result', {
                     success: false,

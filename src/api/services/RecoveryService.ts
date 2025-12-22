@@ -13,6 +13,7 @@ export class RecoveryService {
     }
 
     public async sendEmail(name: string, email: string, resetLink: string) {
+
         return await emailService.sendEmail({
             to: email,
             toName: name,
