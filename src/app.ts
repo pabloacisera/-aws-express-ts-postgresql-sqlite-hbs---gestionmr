@@ -16,10 +16,8 @@ import apiRoutes from "./api/router.js";
 
 // servicios
 import { RegistersService } from "./api/services/RegistersService.js";
-import { documentService } from "./api/services/DocumentService.js";
 import { StatsController } from "./api/controllers/StatsController.js";
 import { profileService } from "./api/services/ProfileService.js";
-import { recoveryService } from "./api/services/RecoveryService.js";
 import { recoveryController } from "./api/controllers/RecoveryController.js";
 import { configService } from "./api/services/ConfigService.js";
 import { statsDetailController } from "./api/controllers/StatsDetailController.js";
@@ -35,6 +33,8 @@ const viewsDir = isProduction
 
 const app: Application = express();
 const port = environment.port;
+
+app.set('trust proxy', 1);
 
 // configuración handlebars
 app.engine(
