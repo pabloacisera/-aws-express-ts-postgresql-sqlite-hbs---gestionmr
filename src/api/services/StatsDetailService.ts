@@ -29,7 +29,8 @@ export class StatsDetailService {
     thirtyDaysFromNow.setHours(23, 59, 59, 999);
     
     const whereClause: any = {
-      userId
+      userId,
+      isDeleted: false
     };
     
     // Configurar filtro según estado
@@ -185,7 +186,7 @@ export class StatsDetailService {
   async getTopEmpresasDetail(userId: number) {
     const empresas = await prisma.controlRegister.groupBy({
       by: ['empresa_select'],
-      where: { userId },
+      where: { userId, isDeleted: false },
       _count: true,
       orderBy: {
         _count: { empresa_select: 'desc' }
@@ -198,6 +199,7 @@ export class StatsDetailService {
         const registros = await prisma.controlRegister.findMany({
           where: {
             userId,
+            isDeleted: false,
             empresa_select: empresa.empresa_select
           },
           select: {
@@ -238,7 +240,7 @@ export class StatsDetailService {
   async getTopLugaresDetail(userId: number) {
     const lugares = await prisma.controlRegister.groupBy({
       by: ['lugar'],
-      where: { userId },
+      where: { userId, isDeleted: false },
       _count: true,
       orderBy: {
         _count: { lugar: 'desc' }
@@ -250,6 +252,7 @@ export class StatsDetailService {
         const registros = await prisma.controlRegister.findMany({
           where: {
             userId,
+            isDeleted: false,
             lugar: lugar.lugar
           },
           select: {

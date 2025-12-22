@@ -53,6 +53,11 @@ export class SQLiteCache {
       tacografo_cert TEXT,
       createdAt DATETIME,
       updatedAt DATETIME,
+
+      -- NUEVOS CAMPOS PARA SOFT DELETE --
+      isDeleted INTEGER DEFAULT 0, -- 0 para false, 1 para true
+      deletedAt DATETIME,
+      ------------------------------------
       
       _cached_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       _expires_at DATETIME,
@@ -61,6 +66,7 @@ export class SQLiteCache {
     
     CREATE INDEX IF NOT EXISTS idx_control_user ON ControlRegister(userId);
     CREATE INDEX IF NOT EXISTS idx_control_dominio ON ControlRegister(dominio);
+    CREATE INDEX IF NOT EXISTS idx_control_isdeleted ON ControlRegister(isDeleted); -- Indexamos para búsquedas rápidas
   `);
 
     // En SqliteCache.ts, en la tabla CertificateDocument, agregar:
@@ -76,6 +82,11 @@ export class SQLiteCache {
         mimeType TEXT,
         description TEXT,  -- Cambiar a TEXT (no nullable si quieres búsquedas)
         uploadedAt DATETIME,
+
+        -- NUEVOS CAMPOS PARA SOFT DELETE --
+        isDeleted INTEGER DEFAULT 0,
+        deletedAt DATETIME,
+        ------------------------------------
         
         _cached_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         _expires_at DATETIME,
@@ -85,6 +96,7 @@ export class SQLiteCache {
       CREATE INDEX IF NOT EXISTS idx_cert_number ON CertificateDocument(certificateNumber);
       CREATE INDEX IF NOT EXISTS idx_cert_filename ON CertificateDocument(fileName);
       CREATE INDEX IF NOT EXISTS idx_cert_description ON CertificateDocument(description);
+      CREATE INDEX IF NOT EXISTS idx_cert_isdeleted ON CertificateDocument(isDeleted);
     `);
 
     // NO crear tabla User ni UserConfig

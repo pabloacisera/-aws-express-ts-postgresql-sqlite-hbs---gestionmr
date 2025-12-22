@@ -29,12 +29,12 @@ export class RegistersService {
       
       // Si no hay en cache, consultar PostgreSQL
       const skip = (page - 1) * limit;
-      let whereCondition: any = {};
+      let whereCondition: any = { isDeleted: false };
 
       if (searchTerm.trim()) {
         if (searchField === "all") {
-          whereCondition = {
-            OR: [
+          whereCondition.OR =
+            [
               {
                 conductor_nombre: { contains: searchTerm, mode: "insensitive" },
               },
@@ -42,8 +42,7 @@ export class RegistersService {
               { interno: { contains: searchTerm, mode: "insensitive" } },
               { dominio: { contains: searchTerm, mode: "insensitive" } },
               { agente: { contains: searchTerm, mode: "insensitive" } },
-            ],
-          };
+            ];
         } else {
           whereCondition[searchField] = {
             contains: searchTerm,
@@ -454,8 +453,12 @@ export class RegistersService {
         where: { controlId },
       });
 
-      await prisma.controlRegister.delete({
+      await prisma.controlRegister.update({
         where: { id: controlId },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date()
+        }
       });
 
       console.log(`✅ Registro ${controlId} eliminado de PostgreSQL`);
@@ -555,7 +558,7 @@ export class RegistersService {
       console.log(`🔍 Números de certificado ${id} no en cache, consultando PostgreSQL...`);
       
       const registry = await prisma.controlRegister.findUnique({
-        where: { id },
+        where: { id, isDeleted: false },
         select: {
           id: true,
           c_matriculacion_cert: true,

@@ -7,7 +7,7 @@ export class StatsService {
     
     // Estadísticas básicas del usuario
     const totalRegistries = await prisma.controlRegister.count({
-      where: { userId }
+      where: { userId, isDeleted: false }
     });
 
     console.log(`📊 Total de registros: ${totalRegistries}`);
@@ -31,11 +31,12 @@ export class StatsService {
           COUNT(*) as count
         FROM "ControlRegister"
         WHERE "userId" = ${userId}
+          AND "isDeleted" = false -- <--- AGREGAR ESTA LÍNEA
           AND "fecha" >= ${sixMonthsAgo}
         GROUP BY DATE_TRUNC('month', "fecha")
         ORDER BY DATE_TRUNC('month', "fecha") ASC
-      `;
-      
+    `;
+
       console.log('📊 Registros por mes (RAW SQL):', rawData);
       
       // Convertir a formato esperado
@@ -54,6 +55,7 @@ export class StatsService {
         by: ['fecha'],
         where: {
           userId,
+          isDeleted: false,
           fecha: { gte: sixMonthsAgo }
         },
         _count: true
@@ -102,7 +104,7 @@ export class StatsService {
     // Distribución por empresa
     const distribucionEmpresas = await prisma.controlRegister.groupBy({
       by: ['empresa_select'],
-      where: { userId },
+      where: { userId, isDeleted:false },
       _count: true,
       orderBy: {
         _count: { empresa_select: 'desc' }
@@ -113,7 +115,7 @@ export class StatsService {
     // Distribución por lugar
     const distribucionLugares = await prisma.controlRegister.groupBy({
       by: ['lugar'],
-      where: { userId },
+      where: { userId, isDeleted: false },
       _count: true,
       orderBy: {
         _count: { lugar: 'desc' }
@@ -145,6 +147,7 @@ export class StatsService {
       const count = await prisma.controlRegister.count({
         where: {
           userId,
+          isDeleted: false,
           [field]: {
             gte: new Date(),
             lte: limitDate

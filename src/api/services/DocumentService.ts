@@ -20,7 +20,7 @@ export class DocumentService {
 
             // 1. Verificar que el control existe
             const controlFound = await prisma.controlRegister.findUnique({
-                where: { id: data.controlId }
+                where: { id: data.controlId, isDeleted: false }
             });
 
             if (!controlFound) {
@@ -51,7 +51,7 @@ export class DocumentService {
 
             if (existingDoc) {
                 console.log(`🔄 Actualizando documento existente ID: ${existingDoc.id}`);
-                
+
                 // Eliminar el archivo anterior
                 if (fs.existsSync(existingDoc.filePath)) {
                     console.log(`🗑️ Eliminando archivo anterior: ${existingDoc.filePath}`);
@@ -73,12 +73,12 @@ export class DocumentService {
                         uploadedAt: new Date()
                     }
                 });
-                
+
                 console.log(`✅ Documento actualizado exitosamente: ID ${certificateDoc.id}`);
-                
+
             } else {
                 console.log('🆕 Creando nuevo documento...');
-                
+
                 // Crear nuevo documento
                 certificateDoc = await prisma.certificateDocument.create({
                     data: {
@@ -93,7 +93,7 @@ export class DocumentService {
                         uploadedAt: new Date()
                     }
                 });
-                
+
                 console.log(`✅ Nuevo documento creado exitosamente: ID ${certificateDoc.id}`);
             }
 
@@ -109,10 +109,10 @@ export class DocumentService {
 
             console.log('🎉 Subida completada exitosamente');
             return certificateDoc;
-            
+
         } catch (error) {
             console.error('❌ Error en uploadCertificate:', error);
-            
+
             // Limpiar archivo temporal si existe y hubo error
             if (file && file.path && fs.existsSync(file.path)) {
                 console.log(`🗑️ Limpiando archivo temporal debido a error: ${file.path}`);
@@ -122,7 +122,7 @@ export class DocumentService {
                     console.error('Error al eliminar archivo temporal:', unlinkError);
                 }
             }
-            
+
             throw error;
         }
     }
@@ -171,7 +171,7 @@ export class DocumentService {
             // PRIMERO: Buscar en cache
             console.log(`🔍 Buscando certificado ${id} en cache...`);
             const cachedCert = await DocumentCacheService.getCertificateById(id);
-            
+
             if (cachedCert) {
                 console.log(`✅ Certificado ${id} encontrado en cache`);
                 // Convertir string a Date para consistencia
@@ -180,7 +180,7 @@ export class DocumentService {
                 }
                 return cachedCert;
             }
-            
+
             // SI NO EXISTE EN CACHE: Consultar PostgreSQL
             console.log(`📦 Certificado ${id} no en cache, consultando PostgreSQL...`);
             const certificate = await prisma.certificateDocument.findUnique({
@@ -207,7 +207,7 @@ export class DocumentService {
             );
 
             return certificate;
-            
+
         } catch (error) {
             console.error("Error al obtener certificado por ID:", error);
             throw new Error("No se pudo obtener el certificado");
@@ -220,7 +220,7 @@ export class DocumentService {
             // PRIMERO: Cache
             console.log(`🔍 Buscando certificado ${certificateType} para control ${controlId} en cache...`);
             const cachedCert = await DocumentCacheService.getCertificateByType(controlId, certificateType);
-            
+
             if (cachedCert) {
                 console.log(`✅ Certificado encontrado en cache`);
                 if (cachedCert.uploadedAt && typeof cachedCert.uploadedAt === 'string') {
@@ -228,12 +228,12 @@ export class DocumentService {
                 }
                 return cachedCert;
             }
-            
+
             // SI NO: PostgreSQL
             console.log(`📦 No en cache, consultando PostgreSQL...`);
             const certificate = await prisma.certificateDocument.findFirst({
                 where: {
-                    controlId, 
+                    controlId,
                     certificateType
                 }
             });
@@ -246,7 +246,7 @@ export class DocumentService {
             }
 
             return certificate;
-            
+
         } catch (error) {
             console.error("Error al obtener certificado por tipo:", error);
             throw error;
@@ -259,7 +259,7 @@ export class DocumentService {
             // ESTRATEGIA CACHE-FIRST para listados
             console.log(`🔍 Buscando certificados del control ${controlId} en cache...`);
             const cachedCerts = await DocumentCacheService.getAllCertificatesByControlId(controlId);
-            
+
             if (cachedCerts && cachedCerts.length > 0) {
                 console.log(`✅ ${cachedCerts.length} certificados encontrados en cache`);
                 // Convertir fechas string a Date
@@ -268,7 +268,7 @@ export class DocumentService {
                     uploadedAt: cert.uploadedAt ? new Date(cert.uploadedAt) : new Date()
                 }));
             }
-            
+
             // SI NO HAY EN CACHE: PostgreSQL
             console.log(`📦 Cache vacío, consultando PostgreSQL...`);
             const certificates = await prisma.certificateDocument.findMany({
@@ -284,7 +284,7 @@ export class DocumentService {
             );
 
             return certificates;
-            
+
         } catch (error) {
             console.error("Error al obtener certificados:", error);
             throw error;
@@ -297,12 +297,12 @@ export class DocumentService {
             // PRIMERO: Cache
             console.log(`🔍 Buscando estado de certificados ${controlId} en cache...`);
             const cachedStatus = await DocumentCacheService.getCertificateStatus(controlId);
-            
+
             if (cachedStatus !== null) {
                 console.log(`✅ Estado de certificados encontrado en cache`);
                 return cachedStatus;
             }
-            
+
             // SI NO: PostgreSQL
             console.log(`📦 No en cache, consultando PostgreSQL...`);
             const control = await prisma.controlRegister.findUnique({
@@ -311,11 +311,11 @@ export class DocumentService {
                     certificates: true
                 }
             });
-            
+
             if (!control) {
                 throw new Error('Control no encontrado');
             }
-            
+
             // Mapear todos los tipos de certificados posibles
             const certificateTypes = [
                 {
@@ -343,13 +343,13 @@ export class DocumentService {
                     hasCertificate: !!control.tacografo_cert
                 }
             ];
-            
+
             // Para cada tipo, verificar si tiene documento subido
             const status = certificateTypes.map(certType => {
                 const uploadedDoc = control.certificates.find(
                     doc => doc.certificateType === certType.type
                 );
-                
+
                 return {
                     type: certType.type,
                     label: certType.label,
@@ -374,7 +374,7 @@ export class DocumentService {
             );
 
             return status;
-            
+
         } catch (error) {
             console.error("Error obteniendo estado de certificados:", error);
             throw error;
@@ -385,42 +385,42 @@ export class DocumentService {
     async deleteCertificate(id: number) {
         try {
             console.log(`🗑️ Eliminando certificado ${id}...`);
-            
+
             // 1. Obtener documento primero
             const doc = await prisma.certificateDocument.findUnique({
-                where: { id }
+                where: { id, isDeleted: false }
             });
-            
+
             if (!doc) {
                 throw new Error('Documento no encontrado');
             }
-            
+
             // 2. Eliminar archivo físico
             if (fs.existsSync(doc.filePath)) {
                 console.log(`🗑️ Eliminando archivo físico: ${doc.filePath}`);
                 fs.unlinkSync(doc.filePath);
             }
-            
+
             // 3. Eliminar de PostgreSQL
             const deletedDoc = await prisma.certificateDocument.delete({
                 where: { id }
             });
-            
+
             console.log(`✅ Certificado ${id} eliminado de PostgreSQL`);
-            
+
             // 4. Eliminar del cache
             try {
                 const cacheDeleted = await DocumentCacheService.deleteCertificate(id);
-                console.log(cacheDeleted ? 
-                    `✅ Eliminado de cache` : 
+                console.log(cacheDeleted ?
+                    `✅ Eliminado de cache` :
                     `⚠️ No existía en cache`
                 );
             } catch (cacheError) {
                 console.error("⚠️ Error al eliminar de cache (continuando):", cacheError);
             }
-            
+
             return deletedDoc;
-            
+
         } catch (error) {
             console.error("Error al eliminar certificado:", error);
             throw error;
@@ -430,7 +430,7 @@ export class DocumentService {
     async deleteCertificateByType(controlId: number, certificateType: $Enums.CertificateType) {
         try {
             console.log(`🗑️ Eliminando certificado ${certificateType} del control ${controlId}...`);
-            
+
             // 1. Buscar documento
             const doc = await prisma.certificateDocument.findFirst({
                 where: {
@@ -438,37 +438,37 @@ export class DocumentService {
                     certificateType
                 }
             });
-            
+
             if (!doc) {
                 throw new Error('Documento no encontrado');
             }
-            
+
             // 2. Eliminar archivo físico
             if (fs.existsSync(doc.filePath)) {
                 console.log(`🗑️ Eliminando archivo físico: ${doc.filePath}`);
                 fs.unlinkSync(doc.filePath);
             }
-            
+
             // 3. Eliminar de PostgreSQL
             const deletedDoc = await prisma.certificateDocument.delete({
                 where: { id: doc.id }
             });
-            
+
             console.log(`✅ Certificado eliminado de PostgreSQL`);
-            
+
             // 4. Eliminar del cache
             try {
                 const cacheDeleted = await DocumentCacheService.deleteCertificateByType(controlId, certificateType);
-                console.log(cacheDeleted ? 
-                    `✅ Eliminado de cache` : 
+                console.log(cacheDeleted ?
+                    `✅ Eliminado de cache` :
                     `⚠️ No existía en cache`
                 );
             } catch (cacheError) {
                 console.error("⚠️ Error al eliminar de cache (continuando):", cacheError);
             }
-            
+
             return deletedDoc;
-            
+
         } catch (error) {
             console.error("Error al eliminar certificado:", error);
             throw error;
@@ -479,20 +479,20 @@ export class DocumentService {
         if (!fs.existsSync(filePath)) {
             throw new Error('Archivo no encontrado');
         }
-        
+
         return fs.createReadStream(filePath);
     }
-    
+
     async getFileBuffer(filePath: string) {
         if (!fs.existsSync(filePath)) {
             throw new Error('Archivo no encontrado');
         }
-        
+
         return fs.readFileSync(filePath);
     }
 
     // ========== MÉTODOS AUXILIARES DE SINCRONIZACIÓN ==========
-    
+
     private async syncToCache(certificate: any): Promise<void> {
         try {
             await DocumentCacheService.syncCertificateFromPostgres(certificate);
@@ -500,21 +500,21 @@ export class DocumentService {
             console.error(`Error sincronizando certificado ${certificate.id} a cache:`, error);
         }
     }
-    
+
     private async syncMultipleToCache(certificates: any[]): Promise<void> {
         try {
             console.log(`🔄 Sincronizando ${certificates.length} certificados a cache...`);
-            
+
             for (const cert of certificates) {
                 await this.syncToCache(cert);
             }
-            
+
             console.log(`✅ ${certificates.length} certificados sincronizados a cache`);
         } catch (error) {
             console.error("Error en syncMultipleToCache:", error);
         }
     }
-    
+
     private async syncControlAndCertsToCache(control: any): Promise<void> {
         try {
             // Sincronizar certificados
@@ -530,7 +530,7 @@ export class DocumentService {
     async syncCertificateToCache(id: number): Promise<boolean> {
         try {
             console.log(`🔄 Sincronizando certificado ${id} a cache manualmente...`);
-            
+
             const certificate = await prisma.certificateDocument.findUnique({
                 where: { id },
             });
@@ -559,30 +559,33 @@ export class DocumentService {
             // ESTRATEGIA CACHE-FIRST
             console.log(`🔍 Buscando certificados "${searchTerm}" en cache...`);
             const cacheResult = await DocumentCacheService.searchCacheCertificates(searchTerm, page, limit);
-            
+
             if (cacheResult.data && cacheResult.data.length > 0) {
                 console.log(`✅ ${cacheResult.data.length} certificados encontrados en cache`);
                 return cacheResult;
             }
-            
+
             // SI NO HAY EN CACHE: PostgreSQL
             console.log(`📦 Cache vacío, consultando PostgreSQL...`);
-            
+
             const skip = (page - 1) * limit;
-            
-            const whereCondition: any = {};
+
+            let whereCondition: any = {};
             if (searchTerm.trim()) {
-                whereCondition.OR = [
-                    { certificateNumber: { contains: searchTerm, mode: 'insensitive' } },
-                    { fileName: { contains: searchTerm, mode: 'insensitive' } },
-                    { description: { contains: searchTerm, mode: 'insensitive' } },
-                ];
+                whereCondition = {
+                    isDeleted: false, // <--- Filtro de seguridad
+                    OR: [
+                        { certificateNumber: { contains: searchTerm, mode: 'insensitive' } },
+                        { fileName: { contains: searchTerm, mode: 'insensitive' } },
+                        { description: { contains: searchTerm, mode: 'insensitive' } }
+                    ]
+                }
             }
-            
+
             const totalRecords = await prisma.certificateDocument.count({
                 where: whereCondition
             });
-            
+
             const certificates = await prisma.certificateDocument.findMany({
                 where: whereCondition,
                 skip,
@@ -601,11 +604,11 @@ export class DocumentService {
                     uploadedAt: 'desc'
                 }
             });
-            
+
             const totalPages = Math.ceil(totalRecords / limit);
             const hasNextPage = page < totalPages;
             const hasPreviousPage = page > 1;
-            
+
             const result = {
                 data: certificates,
                 pagination: {
@@ -617,14 +620,14 @@ export class DocumentService {
                     hasPreviousPage
                 }
             };
-            
+
             // SINCRONIZAR CON CACHE
             this.syncMultipleToCache(certificates).catch(err =>
                 console.error("Error sincronizando búsqueda a cache:", err)
             );
-            
+
             return result;
-            
+
         } catch (error) {
             console.error("Error buscando certificados:", error);
             throw error;

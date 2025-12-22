@@ -21,7 +21,7 @@ export class RegistersCacheService {
 
     const skip = (page - 1) * limit;
 
-    let whereClause = "WHERE 1=1";
+    let whereClause = "WHERE isDeleted = 0";
     const params: any[] = [];
 
     if (searchTerm.trim()) {
