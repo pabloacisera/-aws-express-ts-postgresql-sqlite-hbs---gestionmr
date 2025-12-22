@@ -9,7 +9,7 @@ export class CertificateController {
         this.documentService = new CloudinaryDocService();
     }
 
-    // 1. Subir documento de certificado (NO CAMBIA)
+    // DocumentController.ts - método upload
     public upload = async (req: Request, res: Response): Promise<void> => {
         try {
             if (!req.file) {
@@ -20,7 +20,7 @@ export class CertificateController {
                 return;
             }
 
-            const { controlId, certificateType, certificateNumber, description } = req.body;
+            const { controlId, certificateType, certificateNumber, description, expirationDate } = req.body;
 
             if (!controlId || !certificateType || !certificateNumber) {
                 res.status(400).json({
@@ -30,18 +30,22 @@ export class CertificateController {
                 return;
             }
 
+            // Crear el DTO con o sin expirationDate
             const data: UploadCertificate = {
                 controlId: parseInt(controlId),
                 certificateType: certificateType as 'C_MATRICULACION' | 'SEGURO' | 'RTO' | 'TACOGRAFO',
                 certificateNumber,
-                description
+                description,
+                expirationDate: expirationDate || undefined // Opcional
             };
 
             const certificate = await this.documentService.uploadCertificate(req.file, data);
 
             res.status(201).json({
                 success: true,
-                message: 'Documento subido correctamente',
+                message: expirationDate
+                    ? 'Documento reemplazado y fecha actualizada correctamente'
+                    : 'Documento subido correctamente',
                 data: certificate
             });
 

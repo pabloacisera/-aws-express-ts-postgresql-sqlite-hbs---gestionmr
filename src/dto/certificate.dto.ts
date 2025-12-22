@@ -3,6 +3,7 @@ export interface UploadCertificate {
     certificateType: 'C_MATRICULACION' | 'SEGURO' | 'RTO' | 'TACOGRAFO';
     certificateNumber: string;
     description?: string;
+    expirationDate?: string;
 }
 
 export interface CertificateDocument {

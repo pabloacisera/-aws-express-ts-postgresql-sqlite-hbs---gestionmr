@@ -15,7 +15,8 @@ export class CloudinaryDocService {
         controlId: data.controlId,
         certificateType: data.certificateType,
         certificateNumber: data.certificateNumber,
-        description: data.description
+        description: data.description,
+        expirationDate: data.expirationDate
       });
       console.log('📄 Información del archivo:', {
         originalname: file.originalname,
@@ -139,9 +140,37 @@ export class CloudinaryDocService {
         console.log(`✅ Nuevo documento creado exitosamente: ID ${certificateDoc.id}`);
       }
 
+      if (data.expirationDate) {
+        console.log(`📅 Actualizando fecha de vencimiento para ${data.certificateType}: ${data.expirationDate}`);
+
+        const updateData: any = {}
+
+        const dateFieldMap = {
+          'C_MATRICULACION': 'c_matriculacion_venc',
+          'SEGURO': 'seguro_venc',
+          'RTO': 'rto_venc',
+          'TACOGRAFO': 'tacografo_venc'
+        }
+
+        const dateField = dateFieldMap[data.certificateType];
+        if(dateField) {
+          updateData[dateField] = new Date(data.expirationDate);
+          // actualizar postgres
+          const updateControl = await prisma.controlRegister.update({
+            where: { id: data.controlId },
+            data: updateData
+          });
+
+          console.log(`✅ Fecha de vencimiento actualizada en PostgreSQL: ${dateField} = ${data.expirationDate}`);
+
+          await cloudinaryCacheDocService.syncControlToSQLite(updateControl);
+                console.log(`✅ Control actualizado sincronizado con SQLite cache`);
+        }
+      }
+
       // 🔄 Sincronizar certificado al caché SQLite
       await cloudinaryCacheDocService.syncCertificateToSQLite(certificateDoc);
-      
+
       // 🔄 Sincronizar control al caché SQLite
       await cloudinaryCacheDocService.syncControlToSQLite(controlFound);
 
@@ -213,15 +242,15 @@ export class CloudinaryDocService {
   // certificate by id CON CACHÉ
   public async getCertificateById(id: number) {
     console.log(`🔍 Buscando certificado ${id}...`);
-    
+
     // 1. Primero buscar en caché (SQLite)
     const cachedCert = await cloudinaryCacheDocService.getCertificateById(id);
     if (cachedCert) {
       return cachedCert;
     }
-    
+
     console.log(`📭 Certificado ${id} no encontrado en caché, buscando en PostgreSQL...`);
-    
+
     // 2. Si no está en caché, buscar en PostgreSQL
     const pgCert = await prisma.certificateDocument.findUnique({
       where: { id },
@@ -239,10 +268,10 @@ export class CloudinaryDocService {
 
     if (pgCert) {
       console.log(`✅ Certificado ${id} encontrado en PostgreSQL, sincronizando a caché...`);
-      
+
       // Sincronizar certificado a caché
       await cloudinaryCacheDocService.syncCertificateToSQLite(pgCert);
-      
+
       // Si hay control, sincronizarlo también
       if (pgCert.control) {
         await cloudinaryCacheDocService.syncControlToSQLite(pgCert.control);
@@ -255,15 +284,15 @@ export class CloudinaryDocService {
   // certificate by type CON CACHÉ
   public async getCertificateByType(controlId: number, certificateType: $Enums.CertificateType) {
     console.log(`🔍 Buscando certificado ${certificateType} para control ${controlId}...`);
-    
+
     // 1. Primero buscar en caché (SQLite)
     const cachedCert = await cloudinaryCacheDocService.getCertificateByType(controlId, certificateType);
     if (cachedCert) {
       return cachedCert;
     }
-    
+
     console.log(`📭 Certificado no encontrado en caché, buscando en PostgreSQL...`);
-    
+
     // 2. Si no está en caché, buscar en PostgreSQL
     const pgCert = await prisma.certificateDocument.findFirst({
       where: {
@@ -283,15 +312,15 @@ export class CloudinaryDocService {
   // all certificates by controlId CON CACHÉ
   public async getAllCertificatesById(controlId: number) {
     console.log(`🔍 Buscando todos certificados para control ${controlId}...`);
-    
+
     // 1. Primero buscar en caché (SQLite)
     const cachedCerts = await cloudinaryCacheDocService.getAllCertificatesById(controlId);
     if (cachedCerts && cachedCerts.length > 0) {
       return cachedCerts;
     }
-    
+
     console.log(`📭 No hay certificados en caché, buscando en PostgreSQL...`);
-    
+
     // 2. Si no está en caché, buscar en PostgreSQL
     const pgCerts = await prisma.certificateDocument.findMany({
       where: { controlId },
@@ -314,15 +343,15 @@ export class CloudinaryDocService {
   // getCertificateStatus CON CACHÉ
   async getCertificateStatus(controlId: number) {
     console.log(`🔍 Buscando estado de certificados para control ${controlId}...`);
-    
+
     // 1. Primero buscar en caché (SQLite)
     const cachedStatus = await cloudinaryCacheDocService.getCertificateStatus(controlId);
     if (cachedStatus) {
       return cachedStatus;
     }
-    
+
     console.log(`📭 Estado no encontrado en caché, buscando en PostgreSQL...`);
-    
+
     // 2. Si no está en caché, buscar en PostgreSQL
     const control = await prisma.controlRegister.findUnique({
       where: { id: controlId },
@@ -338,7 +367,7 @@ export class CloudinaryDocService {
     // Sincronizar control y certificados a caché
     console.log(`✅ Control ${controlId} encontrado en PostgreSQL, sincronizando a caché...`);
     await cloudinaryCacheDocService.syncControlToSQLite(control);
-    
+
     for (const cert of control.certificates) {
       await cloudinaryCacheDocService.syncCertificateToSQLite(cert);
     }

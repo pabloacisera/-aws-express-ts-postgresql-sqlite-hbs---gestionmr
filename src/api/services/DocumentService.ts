@@ -97,16 +97,60 @@ export class DocumentService {
                 console.log(`✅ Nuevo documento creado exitosamente: ID ${certificateDoc.id}`);
             }
 
-            // 5. SINCRONIZAR CON CACHE
+            let updatedControl = null;
+
+            if (data.expirationDate) {
+                console.log(`📅 Actualizando fecha de vencimiento para ${data.certificateType}: ${data.expirationDate}`);
+
+                const updateData: any = {};
+                const dateFieldMap = {
+                    'C_MATRICULACION': 'c_matriculacion_venc',
+                    'SEGURO': 'seguro_venc',
+                    'RTO': 'rto_venc',
+                    'TACOGRAFO': 'tacografo_venc'
+                };
+
+                const dateField = dateFieldMap[data.certificateType];
+
+                if (dateField) {
+                    updateData[dateField] = new Date(data.expirationDate);
+
+                    // Actualizar en PostgreSQL
+                    updatedControl = await prisma.controlRegister.update({
+                        where: { id: data.controlId },
+                        data: updateData
+                    });
+
+                    console.log(`✅ Fecha de vencimiento actualizada en PostgreSQL: ${dateField} = ${data.expirationDate}`);
+
+                    // Sincronizar control actualizado con caché
+                    if (updatedControl) {
+                        await DocumentCacheService.syncCertificateFromPostgres(certificateDoc);
+
+                        // ✅ NUEVO: Sincronizar control actualizado con SQLite
+                        await DocumentCacheService.syncControlFromPostgres(updatedControl);
+
+                        // También necesitaríamos sincronizar el control en el caché
+                        // (dependiendo de cómo tengas implementado el cache de controles)
+                    }
+                }
+            } else {
+                console.log(`ℹ️  No se proporcionó fecha de vencimiento (primera carga)`);
+            }
+
             try {
                 console.log(`🔄 Sincronizando certificado ${certificateDoc.id} a cache...`);
                 await DocumentCacheService.syncCertificateFromPostgres(certificateDoc);
-                console.log(`✅ Certificado sincronizado a cache`);
+
+                // ✅ SIEMPRE sincronizar el control
+                const controlToSync = updatedControl || controlFound;  // ✅ USAR updatedControl si existe
+                await DocumentCacheService.syncControlFromPostgres(controlToSync);
+
+                console.log(`✅ Certificado y control sincronizados a cache`);
             } catch (cacheError) {
                 console.error("⚠️ Error al sincronizar con cache (continuando):", cacheError);
                 // No fallamos la operación principal si el cache falla
             }
-
             console.log('🎉 Subida completada exitosamente');
             return certificateDoc;
 
@@ -517,7 +561,10 @@ export class DocumentService {
 
     private async syncControlAndCertsToCache(control: any): Promise<void> {
         try {
-            // Sincronizar certificados
+            // ✅ PRIMERO sincronizar el control
+            await DocumentCacheService.syncControlFromPostgres(control);
+
+            // ✅ LUEGO sincronizar certificados
             if (control.certificates && control.certificates.length > 0) {
                 await this.syncMultipleToCache(control.certificates);
             }

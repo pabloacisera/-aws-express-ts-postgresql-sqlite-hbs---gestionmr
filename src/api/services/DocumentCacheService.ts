@@ -374,4 +374,47 @@ export class DocumentCacheService {
       lastUpdated: new Date().toISOString()
     };
   }
+
+  static async syncControlFromPostgres(control: any): Promise<void> {
+    try {
+      const stmt = this.db.prepare(`
+            INSERT OR REPLACE INTO ControlRegister (
+                id, userId, agente, fecha, lugar, conductor_nombre, licencia_tipo,
+                licencia_numero, licencia_vencimiento, empresa_select, dominio, interno,
+                c_matriculacion_venc, c_matriculacion_cert, seguro_venc, seguro_cert,
+                rto_venc, rto_cert, tacografo_venc, tacografo_cert, createdAt, updatedAt,
+                _cached_at, _source
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 'postgres')
+        `);
+
+      stmt.run(
+        control.id,
+        control.userId,
+        control.agente,
+        control.fecha?.toISOString(),
+        control.lugar,
+        control.conductor_nombre,
+        control.licencia_tipo,
+        control.licencia_numero,
+        control.licencia_vencimiento?.toISOString(),
+        control.empresa_select,
+        control.dominio,
+        control.interno || null,
+        control.c_matriculacion_venc?.toISOString(),
+        control.c_matriculacion_cert,
+        control.seguro_venc?.toISOString(),
+        control.seguro_cert,
+        control.rto_venc?.toISOString(),
+        control.rto_cert,
+        control.tacografo_venc?.toISOString(),
+        control.tacografo_cert,
+        control.createdAt?.toISOString() || new Date().toISOString(),  // ✅ AGREGADO
+        control.updatedAt?.toISOString() || new Date().toISOString()   // ✅ AGREGADO
+      );
+
+      console.log(`✅ Control ${control.id} sincronizado con SQLite cache`);
+    } catch (error) {
+      console.error("Error sincronizando control a cache:", error);
+    }
+  }
 }

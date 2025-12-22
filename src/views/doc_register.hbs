@@ -1,13 +1,62 @@
 <link rel="stylesheet" href="/css/doc_register.css">
+/* Estilos para los inputs de fecha */
+
+<style>
+    /* Estilos para los inputs de fecha */
+    .date-input-group {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding: 8px;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+    }
+
+    .date-input-group label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #495057;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .date-input {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .date-input:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .date-input-group small {
+        font-size: 11px;
+        color: #6c757d;
+        display: block;
+        margin-top: 4px;
+    }
+
+    /* Para tarjetas deshabilitadas */
+    .cert-card.disabled .date-input {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+</style>
 
 <input type="hidden" id="control-id" value="{{controlId}}" />
 
-<div class="container mt-4"> <!-- AGREGAR mt-4 AQUÍ -->
-    {{!-- Agregar un header más coherente --}}
+<div class="container mt-4">
     <div class="mb-4">
         <h2>Documentación del Registro</h2>
         <p class="text-muted">Gestión de certificados para el control ID: {{controlId}}</p>
     </div>
+
     <!-- Estado general -->
     {{#if statusCertificates.allComplete}}
     <div class="status-badge status-complete mb-1">
@@ -50,6 +99,15 @@
                 </p>
                 <input type="file" name="doc_c_matriculacion_cert" id="doc_c_matriculacion_cert"
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" required>
+
+                <!-- INPUT DE FECHA DE VENCIMIENTO -->
+                <div class="date-input-group">
+                    <label for="c_matriculacion_venc">Fecha de vencimiento (opcional):</label>
+                    <input type="date" id="c_matriculacion_venc" name="c_matriculacion_venc"
+                        class="form-control date-input">
+                    <small class="text-muted">Solo si estás reemplazando un documento vencido</small>
+                </div>
+
                 <div class="cert-status status-available">
                     ✅ Disponible para subir
                 </div>
@@ -66,6 +124,15 @@
                 </p>
                 <input type="file" name="doc_c_matriculacion_cert" id="doc_c_matriculacion_cert"
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" disabled>
+
+                <!-- INPUT DE FECHA DESHABILITADO -->
+                <div class="date-input-group">
+                    <label for="c_matriculacion_venc">Fecha de vencimiento:</label>
+                    <input type="date" id="c_matriculacion_venc" name="c_matriculacion_venc"
+                        class="form-control date-input" disabled>
+                    <small class="text-muted">No disponible</small>
+                </div>
+
                 <div class="cert-status status-pending">
                     ⏳ Pendiente de habilitación
                 </div>
@@ -85,6 +152,14 @@
                 </p>
                 <input type="file" name="doc_seguro_cert" id="doc_seguro_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     class="cert-file-input" required>
+
+                <!-- INPUT DE FECHA DE VENCIMIENTO -->
+                <div class="date-input-group">
+                    <label for="seguro_venc">Fecha de vencimiento (opcional):</label>
+                    <input type="date" id="seguro_venc" name="seguro_venc" class="form-control date-input">
+                    <small class="text-muted">Solo si estás reemplazando un documento vencido</small>
+                </div>
+
                 <div class="cert-status status-available">
                     ✅ Disponible para subir
                 </div>
@@ -101,6 +176,14 @@
                 </p>
                 <input type="file" name="doc_seguro_cert" id="doc_seguro_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     class="cert-file-input" disabled>
+
+                <!-- INPUT DE FECHA DESHABILITADO -->
+                <div class="date-input-group">
+                    <label for="seguro_venc">Fecha de vencimiento:</label>
+                    <input type="date" id="seguro_venc" name="seguro_venc" class="form-control date-input" disabled>
+                    <small class="text-muted">No disponible</small>
+                </div>
+
                 <div class="cert-status status-pending">
                     ⏳ Pendiente de habilitación
                 </div>
@@ -120,6 +203,14 @@
                 </p>
                 <input type="file" name="doc_rto_cert" id="doc_rto_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     class="cert-file-input" required>
+
+                <!-- INPUT DE FECHA DE VENCIMIENTO -->
+                <div class="date-input-group">
+                    <label for="rto_venc">Fecha de vencimiento (opcional):</label>
+                    <input type="date" id="rto_venc" name="rto_venc" class="form-control date-input">
+                    <small class="text-muted">Solo si estás reemplazando un documento vencido</small>
+                </div>
+
                 <div class="cert-status status-available">
                     ✅ Disponible para subir
                 </div>
@@ -136,6 +227,14 @@
                 </p>
                 <input type="file" name="doc_rto_cert" id="doc_rto_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                     class="cert-file-input" disabled>
+
+                <!-- INPUT DE FECHA DESHABILITADO -->
+                <div class="date-input-group">
+                    <label for="rto_venc">Fecha de vencimiento:</label>
+                    <input type="date" id="rto_venc" name="rto_venc" class="form-control date-input" disabled>
+                    <small class="text-muted">No disponible</small>
+                </div>
+
                 <div class="cert-status status-pending">
                     ⏳ Pendiente de habilitación
                 </div>
@@ -155,6 +254,14 @@
                 </p>
                 <input type="file" name="doc_tacografo_cert" id="doc_tacografo_cert"
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" required>
+
+                <!-- INPUT DE FECHA DE VENCIMIENTO -->
+                <div class="date-input-group">
+                    <label for="tacografo_venc">Fecha de vencimiento (opcional):</label>
+                    <input type="date" id="tacografo_venc" name="tacografo_venc" class="form-control date-input">
+                    <small class="text-muted">Solo si estás reemplazando un documento vencido</small>
+                </div>
+
                 <div class="cert-status status-available">
                     ✅ Disponible para subir
                 </div>
@@ -171,6 +278,15 @@
                 </p>
                 <input type="file" name="doc_tacografo_cert" id="doc_tacografo_cert"
                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" disabled>
+
+                <!-- INPUT DE FECHA DESHABILITADO -->
+                <div class="date-input-group">
+                    <label for="tacografo_venc">Fecha de vencimiento:</label>
+                    <input type="date" id="tacografo_venc" name="tacografo_venc" class="form-control date-input"
+                        disabled>
+                    <small class="text-muted">No disponible</small>
+                </div>
+
                 <div class="cert-status status-pending">
                     ⏳ Pendiente de habilitación
                 </div>
@@ -189,6 +305,8 @@
     <div class="footer-info">
         Estado: <strong>{{#if statusCertificates.allComplete}}Completo{{else}}Incompleto{{/if}}</strong></p>
         <p>Formatos aceptados: PDF, JPG, PNG, DOC, DOCX (Máx. 10MB por archivo)</p>
+        <p><small>Nota: Los campos de fecha son opcionales y solo se usan cuando se reemplaza un documento
+                vencido.</small></p>
     </div>
 </div>
 
