@@ -21,6 +21,7 @@ import { profileService } from "./api/services/ProfileService.js";
 import { recoveryController } from "./api/controllers/RecoveryController.js";
 import { configService } from "./api/services/ConfigService.js";
 import { statsDetailController } from "./api/controllers/StatsDetailController.js";
+import { RegistersCacheService } from "./api/services/RegistersCacheService.js";
 
 // configuración rutas
 const __filename = fileURLToPath(import.meta.url);
@@ -171,6 +172,11 @@ if (isProduction) {
 } else {
   app.use(express.static(path.join(process.cwd(), "public")));
 }
+
+// Inicializar estructura de tabla
+RegistersCacheService.ensureTableStructure?.().catch(err => {
+  console.error("Error inicializando estructura de cache:", err);
+});
 
 // configuración de middlewares
 app.use(cors());

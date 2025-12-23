@@ -4,7 +4,7 @@ import { dataControl, PaginationResult } from "../../dto/control.dto.js";
 import { RegistersCacheService } from "./RegistersCacheService.js";
 
 export class RegistersService {
-  
+
   // ========== MÉTODO DE BÚSQUEDA CON CACHE ==========
   static async searchRegistries(
     searchTerm: string,
@@ -18,15 +18,15 @@ export class RegistersService {
       const cacheResult = await RegistersCacheService.searchCacheRegisters(
         searchTerm, searchField, page, limit
       );
-      
+
       // Si hay datos en el cache, retornarlos inmediatamente
       if (cacheResult.data && cacheResult.data.length > 0) {
         console.log(`✅ ${cacheResult.data.length} registros encontrados en cache SQLite`);
         return cacheResult;
       }
-      
+
       console.log("📦 Cache vacío, consultando PostgreSQL...");
-      
+
       // Si no hay en cache, consultar PostgreSQL
       const skip = (page - 1) * limit;
       let whereCondition: any = { isDeleted: false };
@@ -134,12 +134,12 @@ export class RegistersService {
       };
 
       // GUARDAR EN CACHE para futuras consultas
-      this.syncResultsToCache(formattedResults).catch(err => 
+      this.syncResultsToCache(formattedResults).catch(err =>
         console.error("Error sincronizando a cache:", err)
       );
 
       return finalResult;
-      
+
     } catch (error) {
       console.error("Error en búsqueda:", error);
       throw new Error("No se pudo realizar la búsqueda");
@@ -152,17 +152,24 @@ export class RegistersService {
     limit: number = 20,
   ): Promise<PaginationResult> {
     try {
+      await RegistersCacheService.ensureTableStructure?.();
       // ESTRATEGIA CACHE-FIRST
       console.log("🔍 Consultando SQLite cache primero...");
       const cacheResult = await RegistersCacheService.getAllRegistries(page, limit);
-      
+
       if (cacheResult.data && cacheResult.data.length > 0) {
         console.log(`✅ ${cacheResult.data.length} registros obtenidos desde cache SQLite`);
         return cacheResult;
       }
-      
+
+      const firstItem = cacheResult.data[0];
+      if (firstItem && firstItem.certificates && Array.isArray(firstItem.certificates)) {
+        console.log("📄 Datos del cache ya incluyen documentos");
+        return cacheResult;
+      }
+
       console.log("📦 Cache vacío, consultando PostgreSQL...");
-      
+
       // Si no hay en cache, consultar PostgreSQL
       const skip = (page - 1) * limit;
       const totalRecords = await prisma.controlRegister.count({ where: { isDeleted: false } });
@@ -251,7 +258,7 @@ export class RegistersService {
       );
 
       return finalResult;
-      
+
     } catch (error) {
       console.error("Error al obtener registros", error);
       throw new Error("No se han podido obtener registros");
@@ -290,7 +297,7 @@ export class RegistersService {
       });
 
       console.log(`✅ Registro creado en PostgreSQL con ID: ${newRegister.id}`);
-      
+
       // LUEGO: Crear en SQLite cache con el ID real
       console.log("➕ Creando registro en SQLite cache...");
       try {
@@ -302,9 +309,9 @@ export class RegistersService {
       } catch (cacheError) {
         console.error("⚠️ Error al sincronizar con cache (continuando):", cacheError);
       }
-      
+
       return newRegister;
-      
+
     } catch (error) {
       console.error("Error al crear registro", error);
       throw new Error("No se ha podido crear el registro");
@@ -317,14 +324,14 @@ export class RegistersService {
       // PRIMERO: Buscar en SQLite cache
       console.log(`🔍 Buscando registro ${id} en SQLite cache...`);
       const cachedRegistry = await RegistersCacheService.getRegistryById(id);
-      
+
       if (cachedRegistry) {
         console.log(`✅ Registro ${id} encontrado en cache SQLite`);
         return cachedRegistry;
       }
-      
+
       console.log(`📦 Registro ${id} no en cache, consultando PostgreSQL...`);
-      
+
       // SI NO EXISTE EN CACHE: Consultar PostgreSQL
       const registry = await prisma.controlRegister.findUnique({
         where: { id },
@@ -368,12 +375,12 @@ export class RegistersService {
       }
 
       console.log(`✅ Registro ${id} obtenido de PostgreSQL, guardando en cache...`);
-      
+
       // GUARDAR EN CACHE para futuras consultas
       await this.syncSingleToCache(registry);
-      
+
       return registry;
-      
+
     } catch (error) {
       console.error("Error al obtener registro por ID:", error);
       throw new Error("No se pudo obtener el registro");
@@ -392,14 +399,14 @@ export class RegistersService {
           updatedAt: new Date()
         }
       });
-      
+
       console.log(`✅ Registro ${id} actualizado en PostgreSQL`);
-      
+
       // LUEGO: Sincronizar a SQLite
       await this.syncSingleToCache(updatedRegistry);
-      
+
       return updatedRegistry;
-      
+
     } catch (error) {
       console.error("Error al actualizar registro:", error);
       throw new Error("No se pudo actualizar el registro");
@@ -410,7 +417,7 @@ export class RegistersService {
   static async deleteRegistry(controlId: number) {
     try {
       console.log(`🗑️ Iniciando borrado lógico del registro ${controlId}...`);
-      
+
       const updated = await prisma.controlRegister.update({
         where: { id: controlId },
         data: {
@@ -420,12 +427,12 @@ export class RegistersService {
       });
 
       console.log(`✅ Registro ${controlId} marcado como isDeleted: true en Postgres`);
-      
+
       // Sincronizar el estado de borrado al cache
       await this.syncSingleToCache(updated);
-      
+
       console.log(`✅ Cache de registro ${controlId} actualizado (marcado como borrado)`);
-      
+
       return true;
     } catch (err) {
       console.error("Error al eliminar el registro:", err);
@@ -441,9 +448,9 @@ export class RegistersService {
         console.log(`✅ Estado de certificados ${id} desde cache`);
         return cacheStatus;
       }
-      
+
       console.log(`🔍 Estado de certificados ${id} no en cache, consultando PostgreSQL...`);
-      
+
       const controlRegister = await prisma.controlRegister.findUnique({
         where: { id },
         select: {
@@ -499,7 +506,7 @@ export class RegistersService {
         console.log(`✅ Números de certificado ${id} desde cache`);
         return cacheNumbers;
       }
-      
+
       const registry = await prisma.controlRegister.findUnique({
         where: { id, isDeleted: false },
         select: {
@@ -537,7 +544,7 @@ export class RegistersService {
   static async syncRegistryToCache(id: number): Promise<boolean> {
     try {
       console.log(`🔄 Sincronizando registro ${id} a cache...`);
-      
+
       const registry = await prisma.controlRegister.findUnique({
         where: { id },
       });
@@ -562,7 +569,7 @@ export class RegistersService {
     let failed = 0;
 
     console.log(`🔄 Sincronizando ${ids.length} registros a cache...`);
-    
+
     for (const id of ids) {
       try {
         const synced = await this.syncRegistryToCache(id);
@@ -596,7 +603,7 @@ export class RegistersService {
   }
 
   // ========== MÉTODOS AUXILIARES PRIVADOS PARA SINCRONIZACIÓN ==========
-  
+
   private static async syncResultsToCache(results: any[]): Promise<void> {
     try {
       console.log(`🔄 Sincronizando ${results.length} registros a SQLite cache...`);
@@ -608,11 +615,55 @@ export class RegistersService {
       console.error("Error en syncResultsToCache:", error);
     }
   }
-  
+
   private static async syncSingleToCache(registry: any): Promise<void> {
     try {
-      // Conversión de tipos y fechas para SQLite
+      // Obtener documentos asociados desde PostgreSQL
+      const certificates = await prisma.certificateDocument.findMany({
+        where: {
+          controlId: registry.id,
+          isDeleted: false
+        },
+        select: {
+          id: true,
+          certificateType: true,
+          certificateNumber: true,
+          fileName: true,
+          mimeType: true,
+          uploadedAt: true,
+          description: true,
+          filePath: true,
+          publicId: true
+        },
+        orderBy: {
+          uploadedAt: "desc",
+        },
+      });
+
+      // Calcular documentSummary
+      const documentSummary = {
+        total: certificates.length,
+        types: certificates.map((cert: any) => cert.certificateType),
+        byType: {
+          C_MATRICULACION: certificates.filter(
+            (cert: any) => cert.certificateType === "C_MATRICULACION",
+          ).length,
+          SEGURO: certificates.filter(
+            (cert: any) => cert.certificateType === "SEGURO",
+          ).length,
+          RTO: certificates.filter(
+            (cert: any) => cert.certificateType === "RTO",
+          ).length,
+          TACOGRAFO: certificates.filter(
+            (cert: any) => cert.certificateType === "TACOGRAFO",
+          ).length,
+        },
+        latestDocument: certificates.length > 0 ? certificates[0] : null,
+      };
+
       const cacheData: any = {
+        // Campos básicos
+        id: registry.id,
         userId: registry.userId,
         agente: registry.agente,
         fecha: registry.fecha instanceof Date ? registry.fecha.toISOString() : registry.fecha,
@@ -633,9 +684,22 @@ export class RegistersService {
         tacografo_venc: registry.tacografo_venc instanceof Date ? registry.tacografo_venc.toISOString() : registry.tacografo_venc,
         tacografo_cert: registry.tacografo_cert,
         isDeleted: registry.isDeleted ? 1 : 0,
-        deletedAt: registry.deletedAt instanceof Date ? registry.deletedAt.toISOString() : registry.deletedAt
+        deletedAt: registry.deletedAt instanceof Date ? registry.deletedAt.toISOString() : registry.deletedAt,
+        createdAt: registry.createdAt instanceof Date ? registry.createdAt.toISOString() : registry.createdAt,
+        updatedAt: registry.updatedAt instanceof Date ? registry.updatedAt.toISOString() : registry.updatedAt,
+
+        // INCLUIR DOCUMENTOS Y RESUMEN
+        certificates: JSON.stringify(certificates), // Serializar array a JSON
+        documentSummary: JSON.stringify(documentSummary), // Serializar objeto a JSON
+
+        // Información del usuario
+        user: JSON.stringify(registry.user || {
+          id: registry.userId,
+          name: '',
+          email: ''
+        })
       };
-      
+
       // Intentar actualizar, si no existe, crear.
       const success = await RegistersCacheService.updateRegistry(registry.id, cacheData);
       if (!success) {
@@ -679,8 +743,8 @@ export class RegistersService {
       return {
         totalRegistries,
         totalWithCertificates,
-        percentageWithCertificates: totalRegistries > 0 
-          ? Math.round((totalWithCertificates / totalRegistries) * 100) 
+        percentageWithCertificates: totalRegistries > 0
+          ? Math.round((totalWithCertificates / totalRegistries) * 100)
           : 0,
         licenseStats: licenseStats.map(stat => ({
           type: stat.licencia_tipo,
