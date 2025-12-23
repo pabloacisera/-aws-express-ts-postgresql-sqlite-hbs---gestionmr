@@ -283,24 +283,6 @@ app.get("/registers", requireAuth, async (req, res) => {
 
     const results = await RegistersService.getAllRegistries(page, limit);
 
-    // Escribir debug en un archivo
-    const logData = {
-      timestamp: new Date().toISOString(),
-      totalRegistros: results.data.length,
-      primerRegistro: results.data[0]
-        ? {
-            id: results.data[0].id,
-            documentSummary: results.data[0].documentSummary,
-            certificatesCount: results.data[0].certificates?.length || 0,
-            certificates: results.data[0].certificates || [],
-          }
-        : "No hay registros",
-    };
-
-    // Escribir en un archivo en el servidor
-    const logPath = path.join(process.cwd(), "debug_log.json");
-    fs.writeFileSync(logPath, JSON.stringify(logData, null, 2));
-
     res.render("registers", {
       data: results.data,
       pagination: results.pagination,
