@@ -107,10 +107,6 @@ r.get("/registers-control/pdf/:id", (req, res) => {
   PdfController.downloadRegistryPDF(req, res);
 });
 
-/*r.get("/registers/search", (req, res) => {
-  RegisterController.searchRegistries(req, res);
-});
-*/
 r.delete("/registers-control/:controlId", (req, res) => {
   RegisterController.deleteRegistry(req, res);
 });
