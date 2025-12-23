@@ -35,7 +35,7 @@ const viewsDir = isProduction
 const app: Application = express();
 const port = environment.port;
 
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 // configuración handlebars
 app.engine(
@@ -173,11 +173,6 @@ if (isProduction) {
   app.use(express.static(path.join(process.cwd(), "public")));
 }
 
-// Inicializar estructura de tabla
-RegistersCacheService.ensureTableStructure?.().catch(err => {
-  console.error("Error inicializando estructura de cache:", err);
-});
-
 // configuración de middlewares
 app.use(cors());
 app.use(cookieParser());
@@ -260,6 +255,46 @@ app.get("/registers", requireAuth, async (req, res) => {
       data: [],
       pagination: null,
       error: "Error al cargar los registros",
+    });
+  }
+});
+
+// Agrega esto JUSTO DESPUÉS de la ruta /registers en app.ts (~línea 166)
+
+app.get("/registers/search", requireAuth, async (req, res) => {
+  try {
+    const searchTerm = (req.query.q as string) || "";
+    const searchField = (req.query.field as string) || "all";
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 10;
+
+    const results = await RegistersService.searchRegistries(
+      searchTerm,
+      searchField,
+      page,
+      limit,
+    );
+
+    console.log("Búsqueda desde app.ts:", {
+      searchTerm,
+      searchField,
+      results: results.data.length,
+    });
+
+    res.render("registers", {
+      data: results.data,
+      pagination: results.pagination,
+      searchTerm, // Pasar estos para mostrar en la vista
+      searchField,
+    });
+  } catch (error) {
+    console.error("Error en búsqueda:", error);
+    res.render("registers", {
+      data: [],
+      pagination: null,
+      error: "Error al buscar registros",
+      searchTerm: req.query.q || "",
+      searchField: req.query.field || "all",
     });
   }
 });

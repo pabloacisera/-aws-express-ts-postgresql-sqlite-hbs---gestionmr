@@ -4,7 +4,7 @@ import { RegisterController } from "./controllers/RegisterController.js";
 import { PdfController } from "./controllers/PdfController.js";
 import { upload } from "../config/multer.config.js";
 import { CertificateController } from "./controllers/DocumentController.js";
-import  { recoveryController }  from "./controllers/RecoveryController.js";
+import { recoveryController } from "./controllers/RecoveryController.js";
 import { statsDetailController } from "./controllers/StatsDetailController.js";
 
 const r = Router();
@@ -107,10 +107,10 @@ r.get("/registers-control/pdf/:id", (req, res) => {
   PdfController.downloadRegistryPDF(req, res);
 });
 
-r.get("/registers/search", (req, res) => {
+/*r.get("/registers/search", (req, res) => {
   RegisterController.searchRegistries(req, res);
 });
-
+*/
 r.delete("/registers-control/:controlId", (req, res) => {
   RegisterController.deleteRegistry(req, res);
 });
@@ -145,18 +145,24 @@ r.post("/resend-activation", (req, res) => {
 
 // Solicitar recuperación (API)
 r.post("/auth/password-recovery", (req, res) => {
-    recoveryController.passwordRecovery(req, res);
+  recoveryController.passwordRecovery(req, res);
 });
 
 // Resetear contraseña con token (API)
 r.post("/auth/reset-password", (req, res) => {
-    recoveryController.resetPasswordController(req, res);
+  recoveryController.resetPasswordController(req, res);
 });
 
-r.get("/stats/detail/vencimiento/:tipo/:estado", statsDetailController.renderVencimientoDetail);
+r.get(
+  "/stats/detail/vencimiento/:tipo/:estado",
+  statsDetailController.renderVencimientoDetail,
+);
 
 // Detalle de documentos por tipo
-r.get("/stats/detail/documentos/:tipo", statsDetailController.renderDocumentosDetail);
+r.get(
+  "/stats/detail/documentos/:tipo",
+  statsDetailController.renderDocumentosDetail,
+);
 
 // Detalle por empresa
 r.get("/stats/detail/empresas", statsDetailController.renderEmpresasDetail);
@@ -165,6 +171,9 @@ r.get("/stats/detail/empresas", statsDetailController.renderEmpresasDetail);
 r.get("/stats/detail/lugares", statsDetailController.renderLugaresDetail);
 
 // API endpoints (para AJAX si es necesario)
-r.get("/stats/detail/vencimiento/:tipo/:estado", statsDetailController.getVencimientoDetailApi);
+r.get(
+  "/stats/detail/vencimiento/:tipo/:estado",
+  statsDetailController.getVencimientoDetailApi,
+);
 
 export default r;
