@@ -283,6 +283,9 @@ app.get("/registers", requireAuth, async (req, res) => {
 
     const results = await RegistersService.getAllRegistries(page, limit);
 
+    // Agrega este header ANTES del render
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
     res.render("registers", {
       data: results.data,
       pagination: results.pagination,
