@@ -78,7 +78,7 @@ export class RegisterController {
       }
 
       const parseDate = (dateString: string): Date | null => {
-        if (!dateString || dateString.trim() === '') {
+        if (!dateString || dateString.trim() === "") {
           return null;
         }
         const date = new Date(dateString);
@@ -94,7 +94,7 @@ export class RegisterController {
         conductor_nombre: req.body.conductor_nombre,
         licencia_tipo: req.body.licencia_tipo,
         licencia_numero: req.body.licencia_numero,
-        licencia_vencimiento: req.body.licencia_vencimiento || '',
+        licencia_vencimiento: req.body.licencia_vencimiento || "",
         empresa_select: req.body.empresa_select,
         dominio: req.body.dominio,
         interno: req.body.interno || null,
@@ -108,10 +108,11 @@ export class RegisterController {
         tacografo_cert: req.body.tacografo_cert || null,
         // CAMPOS FALTANTES QUE CAUSABAN EL ERROR DE BUILD:
         isDeleted: false,
-        deletedAt: null
+        deletedAt: null,
       };
 
-      const newRegister = await RegistersService.createNewRegister(registerData);
+      const newRegister =
+        await RegistersService.createNewRegister(registerData);
 
       return res.status(201).json({
         success: true,
@@ -170,7 +171,8 @@ export class RegisterController {
         });
       }
 
-      const certificateNumbers = await RegistersService.getCertificateNumbersById(parseInt(id));
+      const certificateNumbers =
+        await RegistersService.getCertificateNumbersById(parseInt(id));
 
       return res.status(200).json({
         success: true,
@@ -206,20 +208,13 @@ export class RegisterController {
 
       return res.status(200).json({
         success: true,
-        message: "Registro eliminado",
+        message: "Registro eliminado correctamente",
       });
-
     } catch (err: any) {
       console.error("Error al borrar registro: ", err);
-      if (err.message === "Registro no encontrado") {
-        return res.status(404).json({
-          success: false,
-          message: "Registro no encontrado",
-        });
-      }
       return res.status(500).json({
         success: false,
-        message: "Error al eliminar registro",
+        message: err.message || "Error al eliminar registro",
       });
     }
   }

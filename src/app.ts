@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import { engine } from "express-handlebars";
 //import type { HandlebarsHelpers } from "./types/handlebars.js"; // Si tienes tipos definidos
@@ -21,7 +22,6 @@ import { profileService } from "./api/services/ProfileService.js";
 import { recoveryController } from "./api/controllers/RecoveryController.js";
 import { configService } from "./api/services/ConfigService.js";
 import { statsDetailController } from "./api/controllers/StatsDetailController.js";
-import { RegistersCacheService } from "./api/services/RegistersCacheService.js";
 
 // configuración rutas
 const __filename = fileURLToPath(import.meta.url);
@@ -240,11 +240,28 @@ app.get("/profile", requireAuth, async (req, res) => {
 // rutas de renderizado privado
 app.get("/registers", requireAuth, async (req, res) => {
   try {
-    // Obtener el número de página desde query params (default: 1)
     const page = parseInt(req.query.page as string) || 1;
-    const limit = 10; // Registros por página
+    const limit = 10;
 
     const results = await RegistersService.getAllRegistries(page, limit);
+
+    // Escribir debug en un archivo
+    const logData = {
+      timestamp: new Date().toISOString(),
+      totalRegistros: results.data.length,
+      primerRegistro: results.data[0]
+        ? {
+            id: results.data[0].id,
+            documentSummary: results.data[0].documentSummary,
+            certificatesCount: results.data[0].certificates?.length || 0,
+            certificates: results.data[0].certificates || [],
+          }
+        : "No hay registros",
+    };
+
+    // Escribir en un archivo en el servidor
+    const logPath = path.join(process.cwd(), "debug_log.json");
+    fs.writeFileSync(logPath, JSON.stringify(logData, null, 2));
 
     res.render("registers", {
       data: results.data,

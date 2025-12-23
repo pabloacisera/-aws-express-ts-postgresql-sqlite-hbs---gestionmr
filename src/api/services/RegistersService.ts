@@ -19,7 +19,7 @@ export class RegistersService {
       const skip = (page - 1) * limit;
       let whereCondition: any = { isDeleted: false };
 
-      if (searchTerm.trim()) {
+      if (searchTerm && searchTerm.trim()) {
         if (searchField === "all") {
           whereCondition.OR = [
             {
@@ -31,11 +31,17 @@ export class RegistersService {
             { agente: { contains: searchTerm, mode: "insensitive" } },
           ];
         } else {
+          // CORREGIR: Usar not: null para campos que pueden ser nulos
           whereCondition[searchField] = {
             contains: searchTerm,
             mode: "insensitive",
           };
         }
+      } else {
+        // Si no hay término de búsqueda, solo filtrar por no eliminados
+        console.log(
+          "ℹ️ Sin término de búsqueda, mostrando todos los registros",
+        );
       }
 
       const totalRecords = await prisma.controlRegister.count({
@@ -350,27 +356,63 @@ export class RegistersService {
     try {
       console.log(`🗑️ Eliminando registro ${controlId}...`);
 
-      // 1. Borrar documentos de Cloudinary
-      const certificates = await prisma.certificateDocument.findMany({
-        where: { controlId },
+      // 1. Primero verificar que el registro existe y no está ya eliminado
+      const control = await prisma.controlRegister.findUnique({
+        where: { id: controlId },
+        include: {
+          certificates: true,
+        },
       });
 
-      for (const cert of certificates) {
+      if (!control) {
+        throw new Error("Registro no encontrado");
+      }
+
+      if (control.isDeleted) {
+        console.log(`⚠️ Registro ${controlId} ya está marcado como eliminado`);
+        return true;
+      }
+
+      // 2. Borrar documentos de Cloudinary
+      for (const cert of control.certificates) {
         if (cert.publicId) {
-          await deleteFromCloudinary(cert.publicId);
+          try {
+            await deleteFromCloudinary(cert.publicId);
+            console.log(`🗑️ Documento Cloudinary eliminado: ${cert.publicId}`);
+          } catch (cloudinaryError) {
+            console.error("Error eliminando de Cloudinary:", cloudinaryError);
+          }
         }
       }
 
-      // 2. Borrar de PostgreSQL
-      await prisma.controlRegister.delete({
-        where: { id: controlId },
+      // 3. Eliminar documentos de la base de datos
+      await prisma.certificateDocument.deleteMany({
+        where: { controlId },
       });
 
-      console.log(`✅ Registro ${controlId} eliminado exitosamente`);
+      // 4. Ahora eliminar el registro principal con soft delete
+      await prisma.controlRegister.update({
+        where: { id: controlId },
+        data: {
+          isDeleted: true,
+          deletedAt: new Date(),
+        },
+      });
+
+      // 5. Opcional: Invalidar caché si estás usando RegistersCacheService
+      // if (RegistersCacheService.invalidateCache) {
+      //   RegistersCacheService.invalidateCache();
+      // }
+
+      console.log(
+        `✅ Registro ${controlId} eliminado exitosamente (soft delete)`,
+      );
       return true;
     } catch (err) {
-      console.error("Error:", err);
-      throw new Error("No se pudo eliminar");
+      console.error("Error eliminando registro:", err);
+      throw new Error(
+        "No se pudo eliminar el registro: " + (err as Error).message,
+      );
     }
   }
 
