@@ -256,17 +256,6 @@
 
 <script type="module" src="/js/registers.js"></script>
 
-
-<script>
-  console.log("Handlebars data debug:");
-  {{#each data}}
-    console.log("Registro {{this.id}}:", {
-      documentSummary: {{{json this.documentSummary}}},
-      certificates: {{{json this.certificates}}}
-    });
-  {{/each}}
-</script>
-
 <script>
 let selectedId = null;
 
