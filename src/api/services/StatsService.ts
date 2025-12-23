@@ -1,13 +1,15 @@
-import prisma  from '../../config/prisma.client.js';
-import { CertificateType } from '@prisma/client';
+import prisma from "../../config/prisma.client.js";
+import { CertificateType } from "@prisma/client";
 
 export class StatsService {
   async getUserStats(userId: number) {
-    console.log(`🔍 [StatsService] Obteniendo estadísticas para usuario ID: ${userId}`);
-    
+    console.log(
+      `🔍 [StatsService] Obteniendo estadísticas para usuario ID: ${userId}`,
+    );
+
     // Estadísticas básicas del usuario
     const totalRegistries = await prisma.controlRegister.count({
-      where: { userId, isDeleted: false }
+      where: { userId, isDeleted: false },
     });
 
     console.log(`📊 Total de registros: ${totalRegistries}`);
@@ -22,7 +24,7 @@ export class StatsService {
 
     // SOLUCIÓN 1: Usar consulta raw SQL (recomendado)
     let registriesByMonth = {};
-    
+
     try {
       // Consulta SQL para agrupar por mes
       const rawData: any[] = await prisma.$queryRaw`
@@ -37,8 +39,8 @@ export class StatsService {
         ORDER BY DATE_TRUNC('month', "fecha") ASC
     `;
 
-      console.log('📊 Registros por mes (RAW SQL):', rawData);
-      
+      console.log("📊 Registros por mes (RAW SQL):", rawData);
+
       // Convertir a formato esperado
       registriesByMonth = rawData.reduce((acc, item) => {
         if (item.month_key) {
@@ -46,22 +48,21 @@ export class StatsService {
         }
         return acc;
       }, {});
-      
     } catch (error) {
-      console.error('Error en consulta raw SQL:', error);
-      
+      console.error("Error en consulta raw SQL:", error);
+
       // SOLUCIÓN 2: Usar groupBy tradicional (backup)
       const backupData = await prisma.controlRegister.groupBy({
-        by: ['fecha'],
+        by: ["fecha"],
         where: {
           userId,
           isDeleted: false,
-          fecha: { gte: sixMonthsAgo }
+          fecha: { gte: sixMonthsAgo },
         },
-        _count: true
+        _count: true,
       });
-      
-      console.log('📊 Registros por mes (Backup):', backupData);
+
+      console.log("📊 Registros por mes (Backup):", backupData);
       registriesByMonth = this.formatMonthlyData(backupData);
     }
 
@@ -70,7 +71,7 @@ export class StatsService {
     // Estadísticas de vencimientos
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(today.getDate() + 30);
     thirtyDaysFromNow.setHours(23, 59, 59, 999);
@@ -80,51 +81,71 @@ export class StatsService {
 
     const vencimientos = {
       proximos: {
-        licencia: await this.getProximosVencimientos(userId, 'licencia_vencimiento', thirtyDaysFromNow),
-        c_matriculacion: await this.getProximosVencimientos(userId, 'c_matriculacion_venc', thirtyDaysFromNow),
-        seguro: await this.getProximosVencimientos(userId, 'seguro_venc', thirtyDaysFromNow),
-        rto: await this.getProximosVencimientos(userId, 'rto_venc', thirtyDaysFromNow),
-        tacografo: await this.getProximosVencimientos(userId, 'tacografo_venc', thirtyDaysFromNow)
+        licencia: await this.getProximosVencimientos(
+          userId,
+          "licencia_vencimiento",
+          thirtyDaysFromNow,
+        ),
+        c_matriculacion: await this.getProximosVencimientos(
+          userId,
+          "c_matriculacion_venc",
+          thirtyDaysFromNow,
+        ),
+        seguro: await this.getProximosVencimientos(
+          userId,
+          "seguro_venc",
+          thirtyDaysFromNow,
+        ),
+        rto: await this.getProximosVencimientos(
+          userId,
+          "rto_venc",
+          thirtyDaysFromNow,
+        ),
+        tacografo: await this.getProximosVencimientos(
+          userId,
+          "tacografo_venc",
+          thirtyDaysFromNow,
+        ),
       },
       vencidos: {
-        licencia: await this.getVencidos(userId, 'licencia_vencimiento'),
-        c_matriculacion: await this.getVencidos(userId, 'c_matriculacion_venc'),
-        seguro: await this.getVencidos(userId, 'seguro_venc'),
-        rto: await this.getVencidos(userId, 'rto_venc'),
-        tacografo: await this.getVencidos(userId, 'tacografo_venc')
-      }
+        licencia: await this.getVencidos(userId, "licencia_vencimiento"),
+        c_matriculacion: await this.getVencidos(userId, "c_matriculacion_venc"),
+        seguro: await this.getVencidos(userId, "seguro_venc"),
+        rto: await this.getVencidos(userId, "rto_venc"),
+        tacografo: await this.getVencidos(userId, "tacografo_venc"),
+      },
     };
 
-    console.log('📅 Vencimientos:', vencimientos);
+    console.log("📅 Vencimientos:", vencimientos);
 
     // Estadísticas de documentos
     const documentosStats = await this.getDocumentosStats(userId);
-    console.log('📄 Estadísticas de documentos:', documentosStats);
+    console.log("📄 Estadísticas de documentos:", documentosStats);
 
     // Distribución por empresa
     const distribucionEmpresas = await prisma.controlRegister.groupBy({
-      by: ['empresa_select'],
-      where: { userId, isDeleted:false },
+      by: ["empresa_select"],
+      where: { userId, isDeleted: false },
       _count: true,
       orderBy: {
-        _count: { empresa_select: 'desc' }
+        _count: { empresa_select: "desc" },
       },
-      take: 5
+      take: 5,
     });
 
     // Distribución por lugar
     const distribucionLugares = await prisma.controlRegister.groupBy({
-      by: ['lugar'],
+      by: ["lugar"],
       where: { userId, isDeleted: false },
       _count: true,
       orderBy: {
-        _count: { lugar: 'desc' }
+        _count: { lugar: "desc" },
       },
-      take: 5
+      take: 5,
     });
 
-    console.log('🏢 Distribución empresas:', distribucionEmpresas);
-    console.log('📍 Distribución lugares:', distribucionLugares);
+    console.log("🏢 Distribución empresas:", distribucionEmpresas);
+    console.log("📍 Distribución lugares:", distribucionLugares);
 
     const resultado = {
       totalRegistries,
@@ -133,16 +154,20 @@ export class StatsService {
       documentos: documentosStats,
       distribuciones: {
         empresas: distribucionEmpresas,
-        lugares: distribucionLugares
+        lugares: distribucionLugares,
       },
-      resumenVencimientos: this.getResumenVencimientos(vencimientos)
+      resumenVencimientos: this.getResumenVencimientos(vencimientos),
     };
 
-    console.log('✅ Resultado final:', resultado);
+    console.log("✅ Resultado final:", resultado);
     return resultado;
   }
 
-  private async getProximosVencimientos(userId: number, field: string, limitDate: Date) {
+  private async getProximosVencimientos(
+    userId: number,
+    field: string,
+    limitDate: Date,
+  ) {
     try {
       const count = await prisma.controlRegister.count({
         where: {
@@ -150,9 +175,9 @@ export class StatsService {
           isDeleted: false,
           [field]: {
             gte: new Date(),
-            lte: limitDate
-          }
-        }
+            lte: limitDate,
+          },
+        },
       });
       console.log(`📅 ${field} próximos: ${count}`);
       return count;
@@ -168,9 +193,9 @@ export class StatsService {
         where: {
           userId,
           [field]: {
-            lt: new Date()
-          }
-        }
+            lt: new Date(),
+          },
+        },
       });
       console.log(`📅 ${field} vencidos: ${count}`);
       return count;
@@ -184,71 +209,90 @@ export class StatsService {
     try {
       const documentos = await prisma.certificateDocument.findMany({
         where: {
-          control: { userId }
+          control: { userId },
         },
         select: {
           certificateType: true,
-          fileSize: true
-        }
+          fileSize: true,
+        },
       });
 
       console.log(`📄 Documentos encontrados: ${documentos.length}`);
-      
+
       const totalDocumentos = documentos.length;
-      const espacioTotal = documentos.reduce((sum, doc) => sum + (doc.fileSize || 0), 0);
-      
+      const espacioTotal = documentos.reduce(
+        (sum, doc) => sum + (doc.fileSize || 0),
+        0,
+      );
+
       // Crear un objeto con conteo por tipo
       const porTipo: Record<string, number> = {};
-      
+
       // Inicializar todos los tipos en 0
-      Object.values(CertificateType).forEach(tipo => {
+      Object.values(CertificateType).forEach((tipo) => {
         porTipo[tipo] = 0;
       });
-      
+
       // Contar documentos por tipo
-      documentos.forEach(doc => {
+      documentos.forEach((doc) => {
         porTipo[doc.certificateType] = (porTipo[doc.certificateType] || 0) + 1;
       });
 
       // Filtrar tipos que tienen valor > 0 (para mostrar solo los que tienen datos)
-      const porTipoFiltrado = Object.entries(porTipo).reduce((acc, [key, value]) => {
-        if (value > 0) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as Record<string, number>);
+      const porTipoFiltrado = Object.entries(porTipo).reduce(
+        (acc, [key, value]) => {
+          if (value > 0) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
       return {
         total: totalDocumentos,
         espacioTotalMB: Math.round((espacioTotal / (1024 * 1024)) * 100) / 100,
         porTipo: porTipoFiltrado,
-        porTipoCompleto: porTipo // Mantener todos para debug
+        porTipoCompleto: porTipo, // Mantener todos para debug
       };
     } catch (error) {
-      console.error('Error obteniendo estadísticas de documentos:', error);
+      console.error("Error obteniendo estadísticas de documentos:", error);
       return {
         total: 0,
         espacioTotalMB: 0,
-        porTipo: {}
+        porTipo: {},
       };
     }
   }
 
   private formatMonthlyData(data: any[]) {
     console.log(`🔄 Formateando datos mensuales:`, data);
-    
-    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+    const meses = [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic",
+    ];
     const result: Record<string, number> = {};
-    
+
     data.forEach((item, index) => {
       console.log(`📅 Item ${index}:`, item);
-      
+
       if (item.fecha) {
         try {
           const fecha = new Date(item.fecha);
           console.log(`📅 Fecha parseada:`, fecha);
           console.log(`📅 Es válida?:`, !isNaN(fecha.getTime()));
-          
+
           if (!isNaN(fecha.getTime())) {
             const key = `${meses[fecha.getMonth()]}-${fecha.getFullYear()}`;
             console.log(`📅 Key generada: ${key}`);
@@ -263,7 +307,7 @@ export class StatsService {
         console.log(`⚠️ item.fecha es null/undefined`);
       }
     });
-    
+
     console.log(`✅ Resultado formateado:`, result);
     return result;
   }
@@ -271,22 +315,195 @@ export class StatsService {
   private getResumenVencimientos(vencimientos: any) {
     const valoresProximos = Object.values(vencimientos.proximos) as number[];
     const valoresVencidos = Object.values(vencimientos.vencidos) as number[];
-    
-    const totalProximos = valoresProximos.reduce((sum: number, count: number) => sum + count, 0);
-    const totalVencidos = valoresVencidos.reduce((sum: number, count: number) => sum + count, 0);
-    
+
+    const totalProximos = valoresProximos.reduce(
+      (sum: number, count: number) => sum + count,
+      0,
+    );
+    const totalVencidos = valoresVencidos.reduce(
+      (sum: number, count: number) => sum + count,
+      0,
+    );
+
     return {
       totalProximos,
       totalVencidos,
-      estado: totalVencidos > 0 ? 'critico' : totalProximos > 0 ? 'advertencia' : 'bueno'
+      estado:
+        totalVencidos > 0
+          ? "critico"
+          : totalProximos > 0
+            ? "advertencia"
+            : "bueno",
     };
+  }
+
+  // Agregar en StatsService.ts después de getResumenVencimientos()
+  async getExpiringDocuments(userId: number, daysThreshold: number = 30) {
+    const now = new Date();
+    const thresholdDate = new Date();
+    thresholdDate.setDate(now.getDate() + daysThreshold);
+
+    console.log(
+      `🔍 Buscando documentos próximos a vencer: ${now.toISOString()} a ${thresholdDate.toISOString()}`,
+    );
+
+    try {
+      // Buscar en PostgreSQL primero
+      const vencimientos = await prisma.controlRegister.findMany({
+        where: {
+          userId,
+          isDeleted: false,
+          OR: [
+            // C. Matriculación próximo a vencer
+            {
+              AND: [
+                { c_matriculacion_venc: { not: null } },
+                { c_matriculacion_venc: { lte: thresholdDate } },
+                { c_matriculacion_venc: { gte: now } },
+              ],
+            },
+            // Seguro próximo a vencer
+            {
+              AND: [
+                { seguro_venc: { not: null } },
+                { seguro_venc: { lte: thresholdDate } },
+                { seguro_venc: { gte: now } },
+              ],
+            },
+            // RTO próximo a vencer
+            {
+              AND: [
+                { rto_venc: { not: null } },
+                { rto_venc: { lte: thresholdDate } },
+                { rto_venc: { gte: now } },
+              ],
+            },
+            // Tacógrafo próximo a vencer
+            {
+              AND: [
+                { tacografo_venc: { not: null } },
+                { tacografo_venc: { lte: thresholdDate } },
+                { tacografo_venc: { gte: now } },
+              ],
+            },
+          ],
+        },
+        include: {
+          certificates: {
+            where: {
+              // Solo documentos del tipo correspondiente
+              certificateType: {
+                in: ["C_MATRICULACION", "SEGURO", "RTO", "TACOGRAFO"],
+              },
+            },
+            orderBy: {
+              uploadedAt: "desc",
+            },
+            take: 1, // Último documento subido
+          },
+        },
+        orderBy: {
+          c_matriculacion_venc: "asc",
+        },
+      });
+
+      console.log(
+        `📋 Encontrados ${vencimientos.length} registros con documentos próximos a vencer`,
+      );
+
+      // Formatear resultados
+      const resultados = vencimientos.map((registro) => {
+        // Determinar qué documento está próximo a vencer
+        let tipoDocumento = "";
+        let fechaVencimiento: Date | null = null;
+
+        if (
+          registro.c_matriculacion_venc &&
+          registro.c_matriculacion_venc >= now &&
+          registro.c_matriculacion_venc <= thresholdDate
+        ) {
+          tipoDocumento = "C_MATRICULACION";
+          fechaVencimiento = registro.c_matriculacion_venc;
+        } else if (
+          registro.seguro_venc &&
+          registro.seguro_venc >= now &&
+          registro.seguro_venc <= thresholdDate
+        ) {
+          tipoDocumento = "SEGURO";
+          fechaVencimiento = registro.seguro_venc;
+        } else if (
+          registro.rto_venc &&
+          registro.rto_venc >= now &&
+          registro.rto_venc <= thresholdDate
+        ) {
+          tipoDocumento = "RTO";
+          fechaVencimiento = registro.rto_venc;
+        } else if (
+          registro.tacografo_venc &&
+          registro.tacografo_venc >= now &&
+          registro.tacografo_venc <= thresholdDate
+        ) {
+          tipoDocumento = "TACOGRAFO";
+          fechaVencimiento = registro.tacografo_venc;
+        }
+
+        // Encontrar el documento correspondiente
+        const documento = registro.certificates.find(
+          (cert) => cert.certificateType === tipoDocumento,
+        );
+
+        return {
+          id: registro.id,
+          interno: registro.interno,
+          dominio: registro.dominio,
+          empresa: registro.empresa_select,
+          conductor: registro.conductor_nombre,
+          tipoDocumento,
+          fechaVencimiento,
+          fechaVencimientoFormateada:
+            fechaVencimiento?.toLocaleDateString("es-AR"),
+          diasRestantes: fechaVencimiento
+            ? Math.ceil(
+                (fechaVencimiento.getTime() - now.getTime()) /
+                  (1000 * 60 * 60 * 24),
+              )
+            : 0,
+          tieneDocumento: !!documento,
+          ultimoDocumento: documento
+            ? {
+                id: documento.id,
+                fileName: documento.fileName,
+                uploadedAt: documento.uploadedAt,
+              }
+            : null,
+        };
+      });
+
+      return resultados;
+    } catch (error) {
+      console.error("❌ Error obteniendo documentos próximos a vencer:", error);
+      return [];
+    }
   }
 
   // Método alternativo: generar datos de prueba para desarrollo
   generateMockStats() {
     const today = new Date();
-    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    
+    const meses = [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic",
+    ];
+
     // Generar datos de prueba para los últimos 6 meses
     const registriesByMonth: Record<string, number> = {};
     for (let i = 5; i >= 0; i--) {
@@ -295,7 +512,7 @@ export class StatsService {
       const key = `${meses[date.getMonth()]}-${date.getFullYear()}`;
       registriesByMonth[key] = Math.floor(Math.random() * 10) + 1;
     }
-    
+
     return {
       totalRegistries: 15,
       registriesByMonth,
@@ -305,41 +522,41 @@ export class StatsService {
           c_matriculacion: 1,
           seguro: 0,
           rto: 3,
-          tacografo: 1
+          tacografo: 1,
         },
         vencidos: {
           licencia: 0,
           c_matriculacion: 0,
           seguro: 1,
           rto: 0,
-          tacografo: 0
-        }
+          tacografo: 0,
+        },
       },
       documentos: {
         total: 6,
         espacioTotalMB: 1.91,
         porTipo: {
-          'C_MATRICULACION': 2,
-          'SEGURO': 1,
-          'RTO': 2,
-          'TACOGRAFO': 1
-        }
+          C_MATRICULACION: 2,
+          SEGURO: 1,
+          RTO: 2,
+          TACOGRAFO: 1,
+        },
       },
       distribuciones: {
         empresas: [
-          { empresa_select: 'Crucero del Norte', _count: 5 },
-          { empresa_select: 'La Nueva Fournier', _count: 3 }
+          { empresa_select: "Crucero del Norte", _count: 5 },
+          { empresa_select: "La Nueva Fournier", _count: 3 },
         ],
         lugares: [
-          { lugar: 'Avellaneda', _count: 4 },
-          { lugar: 'Villa Ocampo', _count: 2 }
-        ]
+          { lugar: "Avellaneda", _count: 4 },
+          { lugar: "Villa Ocampo", _count: 2 },
+        ],
       },
       resumenVencimientos: {
         totalProximos: 7,
         totalVencidos: 1,
-        estado: 'advertencia'
-      }
+        estado: "advertencia",
+      },
     };
   }
 }
