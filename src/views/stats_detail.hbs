@@ -73,20 +73,18 @@
                                     <td>
                                         <!-- Botón diferente según tenga documento -->
                                         {{#if this.tieneDocumento}}
-                                            <button type="button" 
-                                                   class="btn btn-sm btn-{{#if this.necesitaRenovacion}}danger{{else}}warning{{/if}} disabled" 
-                                                   title="{{#if this.necesitaRenovacion}}¡Necesita renovación!{{else}}Renovar documento{{/if}}"
-                                                   data-action="upload-disabled">
+                                            <a href="/doc-register/{{this.id}}?tipo={{@root.detalle.tipo}}&estado={{@root.detalle.estado}}" 
+                                               class="btn btn-sm {{#if this.necesitaRenovacion}}btn-danger{{else}}btn-warning{{/if}}"
+                                               title="{{#if this.necesitaRenovacion}}¡Necesita renovación!{{else}}Renovar documento{{/if}}">
                                                 <i class="fas fa-sync-alt me-1"></i>
                                                 {{#if this.necesitaRenovacion}}¡Renovar!{{else}}Renovar{{/if}}
-                                            </button>
+                                            </a>
                                         {{else}}
-                                            <button type="button" 
-                                                   class="btn btn-sm btn-success disabled" 
-                                                   title="Subir documento por primera vez"
-                                                   data-action="upload-disabled">
+                                            <a href="/doc-register/{{this.id}}" 
+                                               class="btn btn-sm btn-success"
+                                               title="Subir documento por primera vez">
                                                 <i class="fas fa-file-upload me-1"></i>Subir
-                                            </button>
+                                            </a>
                                         {{/if}}
                                     </td>
                                 </tr>
@@ -153,9 +151,9 @@
                                         <a href="/api/cert/{{this.id}}/preview" target="_blank" class="btn btn-sm btn-outline-info" title="Previsualizar">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-outline-success disabled" title="Cargar más documentos" data-action="upload-disabled">
+                                        <a href="/doc-register/{{this.controlId}}" class="btn btn-sm btn-outline-success" title="Cargar más documentos">
                                             <i class="fas fa-file-upload"></i>
-                                        </button>
+                                        </a>
                                     </td>
                                 </tr>
                                 {{/each}}
@@ -207,9 +205,9 @@
                                     <td>{{this.conductor}}</td>
                                     <td>{{this.fecha}}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-success disabled" title="Cargar documentos" data-action="upload-disabled">
+                                        <a href="/doc-register/{{this.id}}" class="btn btn-sm btn-outline-success" title="Cargar documentos">
                                             <i class="fas fa-file-upload"></i>
-                                        </button>
+                                        </a>
                                     </td>
                                 </tr>
                                 {{/each}}
@@ -256,9 +254,9 @@
                                     <td>{{this.empresa}}</td>
                                     <td>{{this.fecha}}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-success disabled" title="Cargar documentos" data-action="upload-disabled">
+                                        <a href="/doc-register/{{this.id}}" class="btn btn-sm btn-outline-success" title="Cargar documentos">
                                             <i class="fas fa-file-upload"></i>
-                                        </button>
+                                        </a>
                                     </td>
                                 </tr>
                                 {{/each}}
@@ -274,10 +272,10 @@
 </div>
 
 <style>
-    /* Estilo para botones deshabilitados */
+    /* Estilos para botones deshabilitados - REMOVER ESTOS ESTILOS O MANTENER PARA OTROS USOS */
     button.disabled[data-action="upload-disabled"] {
         opacity: 0.6;
-        pointer-events: auto; /* Permitir clics para la alerta */
+        pointer-events: auto;
     }
     
     button.disabled[data-action="upload-disabled"]:hover {
@@ -285,46 +283,30 @@
         cursor: not-allowed;
     }
     
-    /* Evitar que otros elementos sean clickeables */
-    .disabled {
-        pointer-events: none;
+    /* Estilos para enlaces */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
     }
 </style>
 
 <script>
-// Script para deshabilitar botones de carga y mostrar alerta
+// Script para manejar parámetros de URL en la página de carga de documentos
 document.addEventListener('DOMContentLoaded', function() {
-    // Seleccionar todos los botones con el atributo data-action="upload-disabled"
-    const uploadButtons = document.querySelectorAll('button[data-action="upload-disabled"]');
+    // Verificar si estamos en una página de vencimientos
+    const tipo = '{{tipo}}';
+    const detalleEstado = '{{detalle.estado}}';
     
-    uploadButtons.forEach(button => {
-        // Asegurar que esté deshabilitado visualmente
-        button.classList.add('disabled');
-        button.setAttribute('disabled', 'disabled');
-        
-        // Cambiar el cursor para indicar que no es clickeable
-        button.style.cursor = 'not-allowed';
-        
-        // Agregar evento de clic para mostrar alerta
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Mostrar alerta personalizada
-            alert('⚠️ Servicio no disponible temporalmente\n\nLa funcionalidad de carga de documentos está en mantenimiento. Por favor, intente nuevamente más tarde.');
+    if (tipo === 'vencimiento') {
+        console.log('Página de vencimientos detectada:', {
+            tipo: '{{detalle.tipo}}',
+            estado: detalleEstado
         });
-    });
+    }
     
-    // También capturar clics en enlaces que podrían ser para carga
-    const uploadLinks = document.querySelectorAll('a[href*="/doc-register/"]');
-    uploadLinks.forEach(link => {
-        // Solo si no es un botón ya manejado
-        if (!link.classList.contains('btn')) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                alert('⚠️ Servicio no disponible temporalmente\n\nLa funcionalidad de carga de documentos está en mantenimiento. Por favor, intente nuevamente más tarde.');
-            });
-        }
+    // Remover cualquier listener que bloquee clics
+    document.querySelectorAll('button[data-action="upload-disabled"]').forEach(button => {
+        button.removeEventListener('click', () => {});
     });
 });
 </script>

@@ -36,6 +36,52 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
+    // NUEVO: Obtener parámetros de URL para renovación
+    const urlParams = new URLSearchParams(window.location.search);
+    const tipoVencimiento = urlParams.get('tipo'); // c_matriculacion, seguro, rto, tacografo
+    const estadoVencimiento = urlParams.get('estado'); // proximos, vencidos
+    
+    console.log('Parámetros de URL para renovación:', {
+        tipo: tipoVencimiento,
+        estado: estadoVencimiento
+    });
+
+    // NUEVO: Auto-seleccionar el tipo de documento si viene de renovación
+    if (tipoVencimiento) {
+        setTimeout(() => {
+            const tipoMap = {
+                'c_matriculacion': 'doc_c_matriculacion_cert',
+                'seguro': 'doc_seguro_cert',
+                'rto': 'doc_rto_cert',
+                'tacografo': 'doc_tacografo_cert'
+            };
+            
+            const inputId = tipoMap[tipoVencimiento];
+            if (inputId) {
+                const input = document.getElementById(inputId);
+                const card = input?.closest('.cert-card');
+                
+                if (input && card && !input.disabled) {
+                    // Resaltar la tarjeta correspondiente
+                    card.style.border = '2px solid #dc3545';
+                    card.style.boxShadow = '0 0 10px rgba(220, 53, 69, 0.3)';
+                    
+                    console.log(`✅ Documento ${tipoVencimiento} resaltado para renovación`);
+                    
+                    // Mostrar mensaje de renovación
+                    const statusDiv = card.querySelector('.cert-status');
+                    if (statusDiv) {
+                        statusDiv.innerHTML = `
+                            <span>🔄 Documento para renovación</span>
+                            <small class="d-block text-danger">${estadoVencimiento === 'vencidos' ? '¡VENCIDO!' : 'Próximo a vencer'}</small>
+                        `;
+                        statusDiv.className = 'cert-status status-selected';
+                    }
+                }
+            }
+        }, 500);
+    }
+
     // Función para verificar si un input de fecha está realmente habilitado
     function isDateInputEnabled(dateFieldId) {
         const dateInput = document.getElementById(dateFieldId);
@@ -468,7 +514,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Redirigir después de 2 segundos
                 setTimeout(() => {
-                    window.location.href = '/registers';
+                    // NUEVO: Redirigir a stats si venía de renovación
+                    if (tipoVencimiento && estadoVencimiento) {
+                        window.location.href = '/stats';
+                    } else {
+                        window.location.href = '/registers';
+                    }
                 }, 2000);
             }
 

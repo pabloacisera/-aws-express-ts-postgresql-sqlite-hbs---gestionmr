@@ -172,4 +172,15 @@ r.get(
   statsDetailController.getVencimientoDetailApi,
 );
 
+r.get("/doc-register/:controlId", (req, res) => {
+  // Esta ruta renderiza la vista doc_register.hbs con el controlId
+  const { controlId } = req.params;
+  const { tipo, estado } = req.query;
+  
+  // Redirigir al controlador existente que renderiza doc_register.hbs
+  // NOTA: Asumo que tienes un controlador que maneja /doc-register/:id
+  // Si no existe, necesitarás crearlo o usar RegisterController.getRegistryById
+  res.redirect(`/registers-control/${controlId}?tipo=${tipo || ''}&estado=${estado || ''}`);
+});
+
 export default r;
