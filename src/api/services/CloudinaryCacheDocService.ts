@@ -7,13 +7,74 @@ export class CloudinaryCacheDocService {
 
   constructor() {
     this.sqliteDb = sqliteCacheSync.getConnection();
+    this.ensureTableStructure();
+  }
+
+  // CloudinaryCacheDocService.ts - Agregar este método para verificar/crear estructura de tabla:
+
+  public async ensureTableStructure(): Promise<void> {
+    try {
+      console.log("🔄 Verificando estructura de tabla CertificateDocument en SQLite...");
+
+      // Verificar si la tabla existe
+      const tableExists = this.sqliteDb.prepare(`
+      SELECT name FROM sqlite_master 
+      WHERE type='table' AND name='CertificateDocument'
+    `).get();
+
+      if (!tableExists) {
+        console.log("📋 Creando tabla CertificateDocument...");
+        const createTableStmt = this.sqliteDb.prepare(`
+        CREATE TABLE CertificateDocument (
+          id INTEGER PRIMARY KEY,
+          controlId INTEGER,
+          certificateType TEXT,
+          certificateNumber TEXT,
+          fileName TEXT,
+          filePath TEXT,
+          publicId TEXT,  -- 🔥 NUEVA COLUMNA PARA CLOUDINARY
+          fileSize INTEGER,
+          mimeType TEXT,
+          description TEXT,
+          uploadedAt TEXT,
+          _cached_at TEXT,
+          _expires_at TEXT,
+          _source TEXT,
+          FOREIGN KEY (controlId) REFERENCES ControlRegister(id)
+        )
+      `);
+        createTableStmt.run();
+        console.log("✅ Tabla CertificateDocument creada con publicId");
+      } else {
+        // Verificar si la columna publicId existe
+        const columns = this.sqliteDb.prepare(
+          `PRAGMA table_info(CertificateDocument)`
+        ).all();
+
+        const columnNames = columns.map((col: any) => col.name);
+
+        // Si no existe publicId, agregarla
+        if (!columnNames.includes('publicId')) {
+          console.log("➕ Agregando columna publicId a CertificateDocument...");
+          this.sqliteDb.prepare(`
+          ALTER TABLE CertificateDocument 
+          ADD COLUMN publicId TEXT
+        `).run();
+          console.log("✅ Columna publicId agregada");
+        }
+      }
+
+      console.log("✅ Estructura de tabla CertificateDocument verificada");
+    } catch (error) {
+      console.error("❌ Error verificando estructura de tabla:", error);
+    }
   }
 
   // 🔍 Buscar certificado por ID en SQLite (caché)
   public async getCertificateById(id: number) {
     try {
       console.log(`🔍 Buscando certificado ${id} en SQLite cache...`);
-      
+
       const cert = this.sqliteDb.prepare(`
         SELECT 
           cd.*,
@@ -60,7 +121,7 @@ export class CloudinaryCacheDocService {
   public async getCertificateByType(controlId: number, certificateType: $Enums.CertificateType) {
     try {
       console.log(`🔍 Buscando certificado ${certificateType} para control ${controlId} en SQLite cache...`);
-      
+
       const cert = this.sqliteDb.prepare(`
         SELECT * FROM CertificateDocument 
         WHERE controlId = ? AND certificateType = ?
@@ -96,7 +157,7 @@ export class CloudinaryCacheDocService {
   public async getAllCertificatesById(controlId: number) {
     try {
       console.log(`🔍 Buscando todos certificados para control ${controlId} en SQLite cache...`);
-      
+
       const certs = this.sqliteDb.prepare(`
         SELECT * FROM CertificateDocument 
         WHERE controlId = ?
@@ -131,7 +192,7 @@ export class CloudinaryCacheDocService {
   public async getCertificateStatus(controlId: number) {
     try {
       console.log(`🔍 Buscando estado de certificados para control ${controlId} en SQLite cache...`);
-      
+
       // Buscar control en SQLite
       const control = this.sqliteDb.prepare(`
         SELECT * FROM ControlRegister WHERE id = ?
@@ -148,7 +209,7 @@ export class CloudinaryCacheDocService {
       `).all(controlId);
 
       console.log(`✅ Control ${controlId} encontrado en SQLite cache`);
-      
+
       const certificateTypes = [
         {
           type: 'C_MATRICULACION' as const,
@@ -210,15 +271,15 @@ export class CloudinaryCacheDocService {
   public async syncCertificateToSQLite(certificate: any): Promise<void> {
     try {
       console.log(`💾 Sincronizando certificado ${certificate.id} a SQLite cache...`);
-      
+
       const stmt = this.sqliteDb.prepare(`
-        INSERT OR REPLACE INTO CertificateDocument (
-          id, controlId, certificateType, certificateNumber, fileName, 
-          filePath, publicId, fileSize, mimeType, description, uploadedAt,
-          _cached_at, _source
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 'postgres')
-      `);
-      
+      INSERT OR REPLACE INTO CertificateDocument (
+        id, controlId, certificateType, certificateNumber, fileName, 
+        filePath, publicId, fileSize, mimeType, description, uploadedAt,
+        _cached_at, _source
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 'postgres')
+    `);
+
       stmt.run(
         certificate.id,
         certificate.controlId,
@@ -226,7 +287,7 @@ export class CloudinaryCacheDocService {
         certificate.certificateNumber,
         certificate.fileName,
         certificate.filePath,
-        certificate.publicId || null,
+        certificate.publicId || null, // 🔥 Manejar como nullable
         certificate.fileSize,
         certificate.mimeType,
         certificate.description || null,
@@ -243,7 +304,7 @@ export class CloudinaryCacheDocService {
   public async syncControlToSQLite(control: any): Promise<void> {
     try {
       console.log(`💾 Sincronizando control ${control.id} a SQLite cache...`);
-      
+
       const stmt = this.sqliteDb.prepare(`
         INSERT OR REPLACE INTO ControlRegister (
           id, userId, agente, fecha, lugar, conductor_nombre, licencia_tipo,
@@ -253,7 +314,7 @@ export class CloudinaryCacheDocService {
           _cached_at, _source
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), 'postgres')
       `);
-      
+
       stmt.run(
         control.id,
         control.userId,
@@ -324,7 +385,7 @@ export class CloudinaryCacheDocService {
       const certCount = this.sqliteDb.prepare(
         'SELECT COUNT(*) as count FROM CertificateDocument'
       ).get();
-      
+
       const controlCount = this.sqliteDb.prepare(
         'SELECT COUNT(*) as count FROM ControlRegister'
       ).get();

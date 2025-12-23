@@ -2,6 +2,8 @@ import { ControlRegister } from "@prisma/client";
 import prisma from "../../config/prisma.client.js";
 import { dataControl, PaginationResult } from "../../dto/control.dto.js";
 import { RegistersCacheService } from "./RegistersCacheService.js";
+import { DocumentCacheService } from "./DocumentCacheService.js";
+import { deleteFromCloudinary } from "../../config/cloudinary.config.js";
 
 export class RegistersService {
 
@@ -413,32 +415,52 @@ export class RegistersService {
     }
   }
 
-  // ========== ELIMINAR REGISTRO CON SINCRONIZACIÓN ==========
   static async deleteRegistry(controlId: number) {
     try {
-      console.log(`🗑️ Iniciando borrado lógico del registro ${controlId}...`);
+      console.log(`🗑️ Eliminando registro ${controlId}...`);
 
-      const updated = await prisma.controlRegister.update({
-        where: { id: controlId },
-        data: {
-          isDeleted: true,
-          deletedAt: new Date()
-        }
+      // 1. Borrar documentos de Cloudinary
+      const certificates = await prisma.certificateDocument.findMany({
+        where: { controlId }
       });
 
-      console.log(`✅ Registro ${controlId} marcado como isDeleted: true en Postgres`);
+      for (const cert of certificates) {
+        if (cert.publicId) {
+          await deleteFromCloudinary(cert.publicId);
+        }
+      }
 
-      // Sincronizar el estado de borrado al cache
-      await this.syncSingleToCache(updated);
+      // 2. Borrar de PostgreSQL
+      await prisma.controlRegister.delete({
+        where: { id: controlId }
+      });
 
-      console.log(`✅ Cache de registro ${controlId} actualizado (marcado como borrado)`);
+      // 3. Borrar de cache SQLite - AGREGAR ESTO:
+      try {
+        // Usa la conexión directa a SQLite
+        const { sqliteCacheSync } = await import("../../cache/SqliteCache.js");
+        const db = sqliteCacheSync.getConnection();
+
+        // Borra control
+        const deleteControl = db.prepare("DELETE FROM ControlRegister WHERE id = ?");
+        deleteControl.run(controlId);
+
+        // Borra certificados
+        const deleteCerts = db.prepare("DELETE FROM CertificateDocument WHERE controlId = ?");
+        deleteCerts.run(controlId);
+
+        console.log(`✅ Borrado de cache completado para ${controlId}`);
+      } catch (cacheError) {
+        console.error("⚠️ Error en cache:", cacheError);
+      }
 
       return true;
     } catch (err) {
-      console.error("Error al eliminar el registro:", err);
-      throw new Error("No se pudo eliminar el registro");
+      console.error("Error:", err);
+      throw new Error("No se pudo eliminar");
     }
   }
+
 
   // ========== VERIFICAR ESTADO DE CERTIFICADOS ==========
   static async checkCertificatesStatus(id: number) {
