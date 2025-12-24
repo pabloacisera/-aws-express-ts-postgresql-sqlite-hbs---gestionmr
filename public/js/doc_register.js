@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('certificates-form');
     const submitBtn = document.getElementById('submit-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
     const controlId = document.getElementById('control-id').value;
 
     if (!form || !controlId) {
@@ -46,40 +47,15 @@ document.addEventListener('DOMContentLoaded', function () {
         estado: estadoVencimiento
     });
 
-    // NUEVO: Auto-seleccionar el tipo de documento si viene de renovación
-    if (tipoVencimiento) {
-        setTimeout(() => {
-            const tipoMap = {
-                'c_matriculacion': 'doc_c_matriculacion_cert',
-                'seguro': 'doc_seguro_cert',
-                'rto': 'doc_rto_cert',
-                'tacografo': 'doc_tacografo_cert'
-            };
-            
-            const inputId = tipoMap[tipoVencimiento];
-            if (inputId) {
-                const input = document.getElementById(inputId);
-                const card = input?.closest('.cert-card');
-                
-                if (input && card && !input.disabled) {
-                    // Resaltar la tarjeta correspondiente
-                    card.style.border = '2px solid #dc3545';
-                    card.style.boxShadow = '0 0 10px rgba(220, 53, 69, 0.3)';
-                    
-                    console.log(`✅ Documento ${tipoVencimiento} resaltado para renovación`);
-                    
-                    // Mostrar mensaje de renovación
-                    const statusDiv = card.querySelector('.cert-status');
-                    if (statusDiv) {
-                        statusDiv.innerHTML = `
-                            <span>🔄 Documento para renovación</span>
-                            <small class="d-block text-danger">${estadoVencimiento === 'vencidos' ? '¡VENCIDO!' : 'Próximo a vencer'}</small>
-                        `;
-                        statusDiv.className = 'cert-status status-selected';
-                    }
-                }
+    // NUEVO: Manejar botón cancelar
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            if (tipoVencimiento && estadoVencimiento) {
+                window.location.href = '/stats';
+            } else {
+                window.location.href = '/registers';
             }
-        }, 500);
+        });
     }
 
     // Función para verificar si un input de fecha está realmente habilitado
@@ -133,17 +109,38 @@ document.addEventListener('DOMContentLoaded', function () {
         return activeInputs;
     }
 
-    // Validar archivos antes de enviar
+    // Validar archivos antes de enviar - MODIFICADO: Permitir envío sin archivos
     function validateFiles() {
         const activeInputs = getActiveFileInputs();
 
+        // ✅ MODIFICADO: Permitir enviar el formulario sin archivos
+        // El usuario puede solo actualizar fechas sin subir nuevos archivos
         if (activeInputs.length === 0) {
-            alert('Por favor, selecciona al menos un archivo para subir');
-            return false;
+            // Verificar si hay fechas ingresadas sin archivos
+            const hasDatesWithoutFiles = Object.keys(fieldMapping).some(fieldName => {
+                const dateField = fieldMapping[fieldName].dateField;
+                const dateInput = document.getElementById(dateField);
+                return dateInput && dateInput.value && isDateInputEnabled(dateField);
+            });
+
+            if (hasDatesWithoutFiles) {
+                if (!confirm('⚠️ Has ingresado fechas de vencimiento pero no has seleccionado archivos.\n\n¿Deseas actualizar solo las fechas?')) {
+                    return false;
+                }
+                console.log('✅ Continuando con solo actualización de fechas');
+                return true;
+            }
+            
+            // Si no hay archivos ni fechas, preguntar si quiere continuar
+            if (!confirm('⚠️ No has seleccionado ningún archivo para subir.\n\n¿Deseas continuar sin subir documentos?')) {
+                return false;
+            }
+            
+            console.log('✅ Continuando sin archivos (solo para navegar)');
+            return true;
         }
 
         const maxSize = 10 * 1024 * 1024;
-        const today = new Date().toISOString().split('T')[0];
 
         for (const item of activeInputs) {
             // Validar tamaño
@@ -248,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Mostrar estado de carga
     function showLoading() {
         submitBtn.disabled = true;
+        if (cancelBtn) cancelBtn.disabled = true;
         submitBtn.innerHTML = `
             <span>⏳ Subiendo documentos...</span>
             <div class="spinner-border spinner-border-sm ms-2" role="status">
@@ -259,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Ocultar estado de carga
     function hideLoading() {
         submitBtn.disabled = false;
+        if (cancelBtn) cancelBtn.disabled = false;
         submitBtn.innerHTML = `
             <span>📤 Subir Documentos</span>
             <span>→</span>
@@ -348,9 +347,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Subir archivos en secuencia
+    // Subir archivos en secuencia - MODIFICADO: Manejar caso sin archivos
     async function uploadFilesSequentially(activeInputs) {
         console.log('Iniciando subida secuencial para', activeInputs.length, 'archivos');
+
+        // ✅ MODIFICADO: Si no hay archivos, solo redirigir
+        if (activeInputs.length === 0) {
+            console.log('✅ No hay archivos para subir, solo redirigiendo');
+            return { 
+                results: [], 
+                successCount: 0, 
+                errorCount: 0 
+            };
+        }
 
         const results = [];
         let successCount = 0;
@@ -413,6 +422,12 @@ document.addEventListener('DOMContentLoaded', function () {
         removeProgressBar();
 
         const activeInputs = getActiveFileInputs();
+        
+        // ✅ MODIFICADO: Solo mostrar barra si hay archivos
+        if (activeInputs.length === 0) {
+            return null;
+        }
+
         const progressContainer = document.createElement('div');
         progressContainer.className = 'progress-container mt-3';
         progressContainer.innerHTML = `
@@ -464,32 +479,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Manejar envío del formulario
+    // Manejar envío del formulario - MODIFICADO: Permitir envío sin archivos
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         console.log('==== INICIANDO PROCESO DE SUBIDA ====');
 
-        // Validar archivos
+        // Validar archivos (ahora permite sin archivos)
         if (!validateFiles()) {
             return;
         }
 
         const activeInputs = getActiveFileInputs();
 
-        if (activeInputs.length === 0) {
-            alert('Por favor, selecciona al menos un archivo para subir');
-            return;
-        }
-
-        // Crear y mostrar barra de progreso
-        createProgressBar();
+        // ✅ MODIFICADO: Ya no requerimos al menos un archivo
+        // Crear barra de progreso solo si hay archivos
+        const progressBar = activeInputs.length > 0 ? createProgressBar() : null;
 
         // Mostrar estado de carga
         showLoading();
 
         try {
-            // Usar subida secuencial
+            // Usar subida secuencial (maneja caso sin archivos)
             const uploadResult = await uploadFilesSequentially(activeInputs);
 
             console.log('Procesando resultados finales...');
@@ -509,12 +520,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
             } else {
-                // Todo exitoso
-                showSuccessMessage(`¡Todos los archivos (${activeInputs.length}) se subieron correctamente!`);
+                // Todo exitoso o sin archivos
+                if (activeInputs.length > 0) {
+                    showSuccessMessage(`¡Todos los archivos (${activeInputs.length}) se subieron correctamente!`);
+                } else {
+                    showSuccessMessage('✅ Operación completada');
+                }
 
                 // Redirigir después de 2 segundos
                 setTimeout(() => {
-                    // NUEVO: Redirigir a stats si venía de renovación
+                    // Redirigir a stats si venía de renovación
                     if (tipoVencimiento && estadoVencimiento) {
                         window.location.href = '/stats';
                     } else {
@@ -568,6 +583,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Actualizar contador de archivos seleccionados
                     updateSelectedCount();
+                } else if (card) {
+                    // Si se quitó el archivo
+                    const statusDiv = card.querySelector('.cert-status');
+                    if (statusDiv && !statusDiv.innerHTML.includes('Disponible')) {
+                        statusDiv.innerHTML = `✅ Disponible para subir`;
+                        statusDiv.className = 'cert-status status-available';
+                    }
+                    
+                    // Actualizar contador
+                    updateSelectedCount();
                 }
             });
         }
@@ -578,10 +603,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const activeInputs = getActiveFileInputs();
         const submitBtn = document.getElementById('submit-btn');
 
-        if (submitBtn && activeInputs.length > 0) {
+        if (submitBtn) {
             const span = submitBtn.querySelector('span:first-child');
             if (span) {
-                span.textContent = `📤 Subir Documentos (${activeInputs.length})`;
+                if (activeInputs.length > 0) {
+                    span.textContent = `📤 Subir Documentos (${activeInputs.length})`;
+                } else {
+                    span.textContent = `📤 Subir Documentos`;
+                }
             }
         }
     }

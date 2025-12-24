@@ -47,6 +47,19 @@
         cursor: not-allowed;
         opacity: 0.6;
     }
+
+    /* Estilos para tarjetas resaltadas en renovación */
+    .cert-card.highlighted {
+        border: 2px solid #dc3545 !important;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.3) !important;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 5px rgba(220, 53, 69, 0.3); }
+        50% { box-shadow: 0 0 15px rgba(220, 53, 69, 0.5); }
+        100% { box-shadow: 0 0 5px rgba(220, 53, 69, 0.3); }
+    }
 </style>
 
 <input type="hidden" id="control-id" value="{{controlId}}" />
@@ -55,6 +68,15 @@
     <div class="mb-4">
         <h2>Documentación del Registro</h2>
         <p class="text-muted">Gestión de certificados para el control ID: {{controlId}}</p>
+        
+        <!-- NUEVO: Información de renovación si viene de stats -->
+        {{#if queryParams}}
+        <div class="alert alert-info">
+            <i class="fas fa-sync-alt me-2"></i>
+            <strong>Modo renovación:</strong> Estás renovando un documento vencido. 
+            Por favor, sube el nuevo documento e ingresa la nueva fecha de vencimiento.
+        </div>
+        {{/if}}
     </div>
 
     <!-- Estado general -->
@@ -89,7 +111,8 @@
             <!-- Certificado de Matriculación -->
             {{#if statusCertificates.c_matriculacion_cert}}
             <!-- VERSIÓN HABILITADA -->
-            <div class="cert-card enabled">
+            <div class="cert-card enabled {{#if (eq queryParams.tipo 'c_matriculacion')}}highlighted{{/if}}" 
+                 id="card_c_matriculacion">
                 <div class="cert-header">
                     <div class="cert-title">📋 Certificado de Matriculación</div>
                     <div class="cert-icon enabled">✓</div>
@@ -98,18 +121,24 @@
                     Documento oficial que acredita la matriculación del vehículo.
                 </p>
                 <input type="file" name="doc_c_matriculacion_cert" id="doc_c_matriculacion_cert"
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" required>
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input">
 
                 <!-- INPUT DE FECHA DE VENCIMIENTO -->
                 <div class="date-input-group">
                     <label for="c_matriculacion_venc">Fecha de vencimiento (opcional):</label>
                     <input type="date" id="c_matriculacion_venc" name="c_matriculacion_venc"
-                        class="form-control date-input">
+                        class="form-control date-input" {{#if queryParams.expirationDate}}value="{{queryParams.expirationDate}}"{{/if}}>
                     <small class="text-muted">Solo si estás reemplazando un documento vencido</small>
                 </div>
 
                 <div class="cert-status status-available">
                     ✅ Disponible para subir
+                    {{#if (eq queryParams.tipo 'c_matriculacion')}}
+                    <div class="text-danger mt-1">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        {{#if (eq queryParams.estado 'vencidos')}}¡VENCIDO!{{else}}Próximo a vencer{{/if}}
+                    </div>
+                    {{/if}}
                 </div>
             </div>
             {{else}}
@@ -142,7 +171,8 @@
             <!-- Certificado de Seguro -->
             {{#if statusCertificates.seguro_cert}}
             <!-- VERSIÓN HABILITADA -->
-            <div class="cert-card enabled">
+            <div class="cert-card enabled {{#if (eq queryParams.tipo 'seguro')}}highlighted{{/if}}" 
+                 id="card_seguro">
                 <div class="cert-header">
                     <div class="cert-title">🛡️ Certificado de Seguro</div>
                     <div class="cert-icon enabled">✓</div>
@@ -151,17 +181,24 @@
                     Póliza de seguro vigente del vehículo con cobertura completa.
                 </p>
                 <input type="file" name="doc_seguro_cert" id="doc_seguro_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    class="cert-file-input" required>
+                    class="cert-file-input">
 
                 <!-- INPUT DE FECHA DE VENCIMIENTO -->
                 <div class="date-input-group">
                     <label for="seguro_venc">Fecha de vencimiento (opcional):</label>
-                    <input type="date" id="seguro_venc" name="seguro_venc" class="form-control date-input">
+                    <input type="date" id="seguro_venc" name="seguro_venc" class="form-control date-input"
+                           {{#if queryParams.expirationDate}}value="{{queryParams.expirationDate}}"{{/if}}>
                     <small class="text-muted">Solo si estás reemplazando un documento vencido</small>
                 </div>
 
                 <div class="cert-status status-available">
                     ✅ Disponible para subir
+                    {{#if (eq queryParams.tipo 'seguro')}}
+                    <div class="text-danger mt-1">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        {{#if (eq queryParams.estado 'vencidos')}}¡VENCIDO!{{else}}Próximo a vencer{{/if}}
+                    </div>
+                    {{/if}}
                 </div>
             </div>
             {{else}}
@@ -193,7 +230,8 @@
             <!-- Certificado RTO -->
             {{#if statusCertificates.rto_cert}}
             <!-- VERSIÓN HABILITADA -->
-            <div class="cert-card enabled">
+            <div class="cert-card enabled {{#if (eq queryParams.tipo 'rto')}}highlighted{{/if}}" 
+                 id="card_rto">
                 <div class="cert-header">
                     <div class="cert-title">🚗 Certificado RTO</div>
                     <div class="cert-icon enabled">✓</div>
@@ -202,17 +240,24 @@
                     Certificado de Registro de Transporte de Oficina (RTO).
                 </p>
                 <input type="file" name="doc_rto_cert" id="doc_rto_cert" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                    class="cert-file-input" required>
+                    class="cert-file-input">
 
                 <!-- INPUT DE FECHA DE VENCIMIENTO -->
                 <div class="date-input-group">
                     <label for="rto_venc">Fecha de vencimiento (opcional):</label>
-                    <input type="date" id="rto_venc" name="rto_venc" class="form-control date-input">
+                    <input type="date" id="rto_venc" name="rto_venc" class="form-control date-input"
+                           {{#if queryParams.expirationDate}}value="{{queryParams.expirationDate}}"{{/if}}>
                     <small class="text-muted">Solo si estás reemplazando un documento vencido</small>
                 </div>
 
                 <div class="cert-status status-available">
                     ✅ Disponible para subir
+                    {{#if (eq queryParams.tipo 'rto')}}
+                    <div class="text-danger mt-1">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        {{#if (eq queryParams.estado 'vencidos')}}¡VENCIDO!{{else}}Próximo a vencer{{/if}}
+                    </div>
+                    {{/if}}
                 </div>
             </div>
             {{else}}
@@ -244,7 +289,8 @@
             <!-- Certificado de Tacógrafo -->
             {{#if statusCertificates.tacografo_cert}}
             <!-- VERSIÓN HABILITADA -->
-            <div class="cert-card enabled">
+            <div class="cert-card enabled {{#if (eq queryParams.tipo 'tacografo')}}highlighted{{/if}}" 
+                 id="card_tacografo">
                 <div class="cert-header">
                     <div class="cert-title">📊 Certificado de Tacógrafo</div>
                     <div class="cert-icon enabled">✓</div>
@@ -253,17 +299,24 @@
                     Certificado de calibración y funcionamiento del tacógrafo.
                 </p>
                 <input type="file" name="doc_tacografo_cert" id="doc_tacografo_cert"
-                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input" required>
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="cert-file-input">
 
                 <!-- INPUT DE FECHA DE VENCIMIENTO -->
                 <div class="date-input-group">
                     <label for="tacografo_venc">Fecha de vencimiento (opcional):</label>
-                    <input type="date" id="tacografo_venc" name="tacografo_venc" class="form-control date-input">
+                    <input type="date" id="tacografo_venc" name="tacografo_venc" class="form-control date-input"
+                           {{#if queryParams.expirationDate}}value="{{queryParams.expirationDate}}"{{/if}}>
                     <small class="text-muted">Solo si estás reemplazando un documento vencido</small>
                 </div>
 
                 <div class="cert-status status-available">
                     ✅ Disponible para subir
+                    {{#if (eq queryParams.tipo 'tacografo')}}
+                    <div class="text-danger mt-1">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        {{#if (eq queryParams.estado 'vencidos')}}¡VENCIDO!{{else}}Próximo a vencer{{/if}}
+                    </div>
+                    {{/if}}
                 </div>
             </div>
             {{else}}
@@ -299,6 +352,9 @@
                 <span>📤 Subir Documentos</span>
                 <span>→</span>
             </button>
+            <button type="button" class="btn btn-outline-secondary ms-2" id="cancel-btn">
+                Cancelar
+            </button>
         </div>
     </form>
 
@@ -307,6 +363,7 @@
         <p>Formatos aceptados: PDF, JPG, PNG, DOC, DOCX (Máx. 10MB por archivo)</p>
         <p><small>Nota: Los campos de fecha son opcionales y solo se usan cuando se reemplaza un documento
                 vencido.</small></p>
+        <p><small>Puedes subir uno o varios documentos a la vez, según necesites.</small></p>
     </div>
 </div>
 
