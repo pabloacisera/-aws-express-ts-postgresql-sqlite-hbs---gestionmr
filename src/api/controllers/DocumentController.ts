@@ -20,6 +20,31 @@ export class CertificateController {
                 return;
             }
 
+            // --- INICIO DE VALIDACIÓN DE TAMAÑO DINÁMICO ---
+            const isImage = req.file.mimetype.startsWith('image/');
+            const fileSizeInMB = req.file.size / (1024 * 1024);
+
+            if (isImage) {
+                // Límite para imágenes: 10MB
+                if (fileSizeInMB > 10) {
+                    res.status(413).json({
+                        success: false,
+                        error: `La imagen es demasiado grande (${fileSizeInMB.toFixed(2)}MB). El máximo permitido para fotos es 10MB.`
+                    });
+                    return;
+                }
+            } else {
+                // Límite para otros archivos (PDF, DOCX, etc): 20MB
+                if (fileSizeInMB > 20) {
+                    res.status(413).json({
+                        success: false,
+                        error: `El documento es demasiado grande (${fileSizeInMB.toFixed(2)}MB). El máximo permitido para archivos es 20MB.`
+                    });
+                    return;
+                }
+            }
+            // --- FIN DE VALIDACIÓN ---
+
             const { controlId, certificateType, certificateNumber, description, expirationDate } = req.body;
 
             if (!controlId || !certificateType || !certificateNumber) {

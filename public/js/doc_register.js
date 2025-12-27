@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const urlParams = new URLSearchParams(window.location.search);
     const tipoVencimiento = urlParams.get('tipo'); // c_matriculacion, seguro, rto, tacografo
     const estadoVencimiento = urlParams.get('estado'); // proximos, vencidos
-    
+
     console.log('Parámetros de URL para renovación:', {
         tipo: tipoVencimiento,
         estado: estadoVencimiento
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // NUEVO: Manejar botón cancelar
     if (cancelBtn) {
-        cancelBtn.addEventListener('click', function() {
+        cancelBtn.addEventListener('click', function () {
             if (tipoVencimiento && estadoVencimiento) {
                 window.location.href = '/stats';
             } else {
@@ -62,14 +62,14 @@ document.addEventListener('DOMContentLoaded', function () {
     function isDateInputEnabled(dateFieldId) {
         const dateInput = document.getElementById(dateFieldId);
         if (!dateInput) return false;
-        
+
         // Verificar si está deshabilitado por atributo
         if (dateInput.disabled) return false;
-        
+
         // Verificar si el padre (.cert-card) está deshabilitado
         const card = dateInput.closest('.cert-card');
         if (card && card.classList.contains('disabled')) return false;
-        
+
         return true;
     }
 
@@ -130,12 +130,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('✅ Continuando con solo actualización de fechas');
                 return true;
             }
-            
+
             // Si no hay archivos ni fechas, preguntar si quiere continuar
             if (!confirm('⚠️ No has seleccionado ningún archivo para subir.\n\n¿Deseas continuar sin subir documentos?')) {
                 return false;
             }
-            
+
             console.log('✅ Continuando sin archivos (solo para navegar)');
             return true;
         }
@@ -146,6 +146,15 @@ document.addEventListener('DOMContentLoaded', function () {
             // Validar tamaño
             if (item.file.size > maxSize) {
                 alert(`El archivo "${item.file.name}" excede el tamaño máximo de 10MB`);
+                return false;
+            }
+
+            const isImage = item.file.type.startsWith('image/');
+            const maxSize = isImage ? 10 * 1024 * 1024 : 20 * 1024 * 1024; // 10MB fotos, 20MB archivos
+
+            if (item.file.size > maxSize) {
+                const limitName = isImage ? "10MB (Imagen)" : "20MB (Documento)";
+                alert(`El archivo "${item.file.name}" excede el tamaño máximo permitido de ${limitName}`);
                 return false;
             }
 
@@ -176,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Verificar que no sea una fecha pasada (opcional)
                 const todayDate = new Date();
                 todayDate.setHours(0, 0, 0, 0);
-                
+
                 if (expirationDate < todayDate) {
                     if (!confirm(`⚠️ La fecha de vencimiento para "${item.file.name}" es una fecha pasada (${item.expirationDate}). ¿Deseas continuar?`)) {
                         return false;
@@ -354,10 +363,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // ✅ MODIFICADO: Si no hay archivos, solo redirigir
         if (activeInputs.length === 0) {
             console.log('✅ No hay archivos para subir, solo redirigiendo');
-            return { 
-                results: [], 
-                successCount: 0, 
-                errorCount: 0 
+            return {
+                results: [],
+                successCount: 0,
+                errorCount: 0
             };
         }
 
@@ -422,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
         removeProgressBar();
 
         const activeInputs = getActiveFileInputs();
-        
+
         // ✅ MODIFICADO: Solo mostrar barra si hay archivos
         if (activeInputs.length === 0) {
             return null;
@@ -590,7 +599,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         statusDiv.innerHTML = `✅ Disponible para subir`;
                         statusDiv.className = 'cert-status status-available';
                     }
-                    
+
                     // Actualizar contador
                     updateSelectedCount();
                 }
