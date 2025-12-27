@@ -220,13 +220,29 @@ export class RegisterController {
     }
   }
   
+  
   static async updateLicenciaDate(req: Request, res: Response) {
   try {
     const { controlId } = req.params;
     const { licencia_vencimiento } = req.body;
 
+    // 1. Validación de seguridad para TypeScript y para la lógica
+    if (!controlId) {
+      return res.status(400).json({ success: false, message: "ID de control no proporcionado" });
+    }
+
+    const idParsed = parseInt(controlId);
+    if (isNaN(idParsed)) {
+      return res.status(400).json({ success: false, message: "ID de control inválido" });
+    }
+
+    if (!licencia_vencimiento) {
+      return res.status(400).json({ success: false, message: "Fecha no proporcionada" });
+    }
+
+    // 2. Operación en base de datos
     await prisma.controlRegister.update({
-      where: { id: parseInt(controlId) },
+      where: { id: idParsed },
       data: { 
         licencia_vencimiento: new Date(licencia_vencimiento),
         updatedAt: new Date()
@@ -235,6 +251,7 @@ export class RegisterController {
 
     return res.status(200).json({ success: true });
   } catch (error: any) {
+    console.error("Error en updateLicenciaDate:", error);
     return res.status(500).json({ success: false, error: error.message });
   }
 }
