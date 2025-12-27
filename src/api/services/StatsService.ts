@@ -33,7 +33,7 @@ export class StatsService {
           COUNT(*) as count
         FROM "ControlRegister"
         WHERE "userId" = ${userId}
-          AND "isDeleted" = false -- <--- AGREGAR ESTA LÍNEA
+          AND "isDeleted" = false
           AND "fecha" >= ${sixMonthsAgo}
         GROUP BY DATE_TRUNC('month', "fecha")
         ORDER BY DATE_TRUNC('month', "fecha") ASC
@@ -189,9 +189,11 @@ export class StatsService {
 
   private async getVencidos(userId: number, field: string) {
     try {
+      // CORRECCIÓN AQUÍ: Se agregó isDeleted: false
       const count = await prisma.controlRegister.count({
         where: {
           userId,
+          isDeleted: false,
           [field]: {
             lt: new Date(),
           },
@@ -209,7 +211,7 @@ export class StatsService {
     try {
       const documentos = await prisma.certificateDocument.findMany({
         where: {
-          control: { userId },
+          control: { userId, isDeleted: false }, // CORRECCIÓN: Filtrar por registros no eliminados
         },
         select: {
           certificateType: true,
@@ -269,46 +271,25 @@ export class StatsService {
     console.log(`🔄 Formateando datos mensuales:`, data);
 
     const meses = [
-      "Ene",
-      "Feb",
-      "Mar",
-      "Abr",
-      "May",
-      "Jun",
-      "Jul",
-      "Ago",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dic",
+      "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+      "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
     ];
     const result: Record<string, number> = {};
 
     data.forEach((item, index) => {
-      console.log(`📅 Item ${index}:`, item);
-
       if (item.fecha) {
         try {
           const fecha = new Date(item.fecha);
-          console.log(`📅 Fecha parseada:`, fecha);
-          console.log(`📅 Es válida?:`, !isNaN(fecha.getTime()));
-
           if (!isNaN(fecha.getTime())) {
             const key = `${meses[fecha.getMonth()]}-${fecha.getFullYear()}`;
-            console.log(`📅 Key generada: ${key}`);
             result[key] = item._count;
-          } else {
-            console.log(`⚠️ Fecha inválida`);
           }
         } catch (error) {
           console.error(`Error parseando fecha:`, error);
         }
-      } else {
-        console.log(`⚠️ item.fecha es null/undefined`);
       }
     });
 
-    console.log(`✅ Resultado formateado:`, result);
     return result;
   }
 
@@ -337,24 +318,17 @@ export class StatsService {
     };
   }
 
-  // Agregar en StatsService.ts después de getResumenVencimientos()
   async getExpiringDocuments(userId: number, daysThreshold: number = 30) {
     const now = new Date();
     const thresholdDate = new Date();
     thresholdDate.setDate(now.getDate() + daysThreshold);
 
-    console.log(
-      `🔍 Buscando documentos próximos a vencer: ${now.toISOString()} a ${thresholdDate.toISOString()}`,
-    );
-
     try {
-      // Buscar en PostgreSQL primero
       const vencimientos = await prisma.controlRegister.findMany({
         where: {
           userId,
           isDeleted: false,
           OR: [
-            // C. Matriculación próximo a vencer
             {
               AND: [
                 { c_matriculacion_venc: { not: null } },
@@ -362,7 +336,6 @@ export class StatsService {
                 { c_matriculacion_venc: { gte: now } },
               ],
             },
-            // Seguro próximo a vencer
             {
               AND: [
                 { seguro_venc: { not: null } },
@@ -370,7 +343,6 @@ export class StatsService {
                 { seguro_venc: { gte: now } },
               ],
             },
-            // RTO próximo a vencer
             {
               AND: [
                 { rto_venc: { not: null } },
@@ -378,7 +350,6 @@ export class StatsService {
                 { rto_venc: { gte: now } },
               ],
             },
-            // Tacógrafo próximo a vencer
             {
               AND: [
                 { tacografo_venc: { not: null } },
@@ -391,7 +362,6 @@ export class StatsService {
         include: {
           certificates: {
             where: {
-              // Solo documentos del tipo correspondiente
               certificateType: {
                 in: ["C_MATRICULACION", "SEGURO", "RTO", "TACOGRAFO"],
               },
@@ -399,7 +369,7 @@ export class StatsService {
             orderBy: {
               uploadedAt: "desc",
             },
-            take: 1, // Último documento subido
+            take: 1,
           },
         },
         orderBy: {
@@ -407,50 +377,25 @@ export class StatsService {
         },
       });
 
-      console.log(
-        `📋 Encontrados ${vencimientos.length} registros con documentos próximos a vencer`,
-      );
-
-      // Formatear resultados
       const resultados = vencimientos.map((registro) => {
-        // Determinar qué documento está próximo a vencer
         let tipoDocumento = "";
         let fechaVencimiento: Date | null = null;
 
-        if (
-          registro.c_matriculacion_venc &&
-          registro.c_matriculacion_venc >= now &&
-          registro.c_matriculacion_venc <= thresholdDate
-        ) {
+        if (registro.c_matriculacion_venc && registro.c_matriculacion_venc >= now && registro.c_matriculacion_venc <= thresholdDate) {
           tipoDocumento = "C_MATRICULACION";
           fechaVencimiento = registro.c_matriculacion_venc;
-        } else if (
-          registro.seguro_venc &&
-          registro.seguro_venc >= now &&
-          registro.seguro_venc <= thresholdDate
-        ) {
+        } else if (registro.seguro_venc && registro.seguro_venc >= now && registro.seguro_venc <= thresholdDate) {
           tipoDocumento = "SEGURO";
           fechaVencimiento = registro.seguro_venc;
-        } else if (
-          registro.rto_venc &&
-          registro.rto_venc >= now &&
-          registro.rto_venc <= thresholdDate
-        ) {
+        } else if (registro.rto_venc && registro.rto_venc >= now && registro.rto_venc <= thresholdDate) {
           tipoDocumento = "RTO";
           fechaVencimiento = registro.rto_venc;
-        } else if (
-          registro.tacografo_venc &&
-          registro.tacografo_venc >= now &&
-          registro.tacografo_venc <= thresholdDate
-        ) {
+        } else if (registro.tacografo_venc && registro.tacografo_venc >= now && registro.tacografo_venc <= thresholdDate) {
           tipoDocumento = "TACOGRAFO";
           fechaVencimiento = registro.tacografo_venc;
         }
 
-        // Encontrar el documento correspondiente
-        const documento = registro.certificates.find(
-          (cert) => cert.certificateType === tipoDocumento,
-        );
+        const documento = registro.certificates.find((cert) => cert.certificateType === tipoDocumento);
 
         return {
           id: registro.id,
@@ -460,22 +405,10 @@ export class StatsService {
           conductor: registro.conductor_nombre,
           tipoDocumento,
           fechaVencimiento,
-          fechaVencimientoFormateada:
-            fechaVencimiento?.toLocaleDateString("es-AR"),
-          diasRestantes: fechaVencimiento
-            ? Math.ceil(
-                (fechaVencimiento.getTime() - now.getTime()) /
-                  (1000 * 60 * 60 * 24),
-              )
-            : 0,
+          fechaVencimientoFormateada: fechaVencimiento?.toLocaleDateString("es-AR"),
+          diasRestantes: fechaVencimiento ? Math.ceil((fechaVencimiento.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0,
           tieneDocumento: !!documento,
-          ultimoDocumento: documento
-            ? {
-                id: documento.id,
-                fileName: documento.fileName,
-                uploadedAt: documento.uploadedAt,
-              }
-            : null,
+          ultimoDocumento: documento ? { id: documento.id, fileName: documento.fileName, uploadedAt: documento.uploadedAt } : null,
         };
       });
 
@@ -486,25 +419,12 @@ export class StatsService {
     }
   }
 
-  // Método alternativo: generar datos de prueba para desarrollo
   generateMockStats() {
+    // Este método lo mantengo tal cual por si lo usas para pruebas, 
+    // pero recuerda que el controlador llama a getUserStats()
     const today = new Date();
-    const meses = [
-      "Ene",
-      "Feb",
-      "Mar",
-      "Abr",
-      "May",
-      "Jun",
-      "Jul",
-      "Ago",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dic",
-    ];
+    const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
-    // Generar datos de prueba para los últimos 6 meses
     const registriesByMonth: Record<string, number> = {};
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
@@ -517,46 +437,15 @@ export class StatsService {
       totalRegistries: 15,
       registriesByMonth,
       vencimientos: {
-        proximos: {
-          licencia: 2,
-          c_matriculacion: 1,
-          seguro: 0,
-          rto: 3,
-          tacografo: 1,
-        },
-        vencidos: {
-          licencia: 0,
-          c_matriculacion: 0,
-          seguro: 1,
-          rto: 0,
-          tacografo: 0,
-        },
+        proximos: { licencia: 2, c_matriculacion: 1, seguro: 0, rto: 3, tacografo: 1 },
+        vencidos: { licencia: 0, c_matriculacion: 0, seguro: 1, rto: 0, tacografo: 0 },
       },
-      documentos: {
-        total: 6,
-        espacioTotalMB: 1.91,
-        porTipo: {
-          C_MATRICULACION: 2,
-          SEGURO: 1,
-          RTO: 2,
-          TACOGRAFO: 1,
-        },
-      },
+      documentos: { total: 6, espacioTotalMB: 1.91, porTipo: { C_MATRICULACION: 2, SEGURO: 1, RTO: 2, TACOGRAFO: 1 } },
       distribuciones: {
-        empresas: [
-          { empresa_select: "Crucero del Norte", _count: 5 },
-          { empresa_select: "La Nueva Fournier", _count: 3 },
-        ],
-        lugares: [
-          { lugar: "Avellaneda", _count: 4 },
-          { lugar: "Villa Ocampo", _count: 2 },
-        ],
+        empresas: [{ empresa_select: "Crucero del Norte", _count: 5 }, { empresa_select: "La Nueva Fournier", _count: 3 }],
+        lugares: [{ lugar: "Avellaneda", _count: 4 }, { lugar: "Villa Ocampo", _count: 2 }],
       },
-      resumenVencimientos: {
-        totalProximos: 7,
-        totalVencidos: 1,
-        estado: "advertencia",
-      },
+      resumenVencimientos: { totalProximos: 7, totalVencidos: 1, estado: "advertencia" },
     };
   }
 }
