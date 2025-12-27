@@ -140,19 +140,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return true;
         }
 
-        const maxSize = 10 * 1024 * 1024;
+        // --- CORRECCIÓN AQUÍ: Evitamos el ReferenceError definiendo una sola vez maxSize ---
 
         for (const item of activeInputs) {
-            // Validar tamaño
-            if (item.file.size > maxSize) {
-                alert(`El archivo "${item.file.name}" excede el tamaño máximo de 10MB`);
-                return false;
-            }
-
             const isImage = item.file.type.startsWith('image/');
-            const maxSize = isImage ? 10 * 1024 * 1024 : 20 * 1024 * 1024; // 10MB fotos, 20MB archivos
+            // Declaramos la constante con un nombre único dentro del bucle
+            const currentLimit = isImage ? 10 * 1024 * 1024 : 20 * 1024 * 1024; // 10MB fotos, 20MB archivos
 
-            if (item.file.size > maxSize) {
+            if (item.file.size > currentLimit) {
                 const limitName = isImage ? "10MB (Imagen)" : "20MB (Documento)";
                 alert(`El archivo "${item.file.name}" excede el tamaño máximo permitido de ${limitName}`);
                 return false;
