@@ -106,6 +106,27 @@
         <div class="cert-grid">
             <!-- Los 4 certificados se renderizan dinámicamente según los booleanos -->
 
+            <div class="cert-card {{#if (eq tipoVencimiento 'licencia')}}highlight-vencimiento{{/if}}" id="licencia-section">
+    <div class="cert-header">
+        <div class="cert-icon">🪪</div>
+        <div class="cert-info">
+            <h5 class="mb-0">Licencia de Conducir</h5>
+            <small class="text-muted">Actualizar solo fecha de vencimiento</small>
+        </div>
+    </div>
+    
+    <div class="date-input-group mt-3">
+        <label for="licencia_vencimiento_input">Nueva fecha de vencimiento:</label>
+        <input type="date" id="licencia_vencimiento_input" class="form-control date-input">
+    </div>
+
+    <button type="button" id="btn-update-licencia" class="btn btn-primary w-100 mt-2">
+        <i class="fas fa-save me-2"></i> Actualizar Fecha Licencia
+    </button>
+    
+    <div id="licencia-feedback" class="mt-2" style="display: none;"></div>
+</div>
+                        
             <!-- Certificado de Matriculación -->
             {{#if statusCertificates.c_matriculacion_cert}}
             <!-- VERSIÓN HABILITADA -->
@@ -364,5 +385,50 @@
         <p><small>Puedes subir uno o varios documentos a la vez, según necesites.</small></p>
     </div>
 </div>
+
+<script>
+// Al final de tu archivo doc_register.js o dentro del DOMContentLoaded
+const btnUpdateLicencia = document.getElementById('btn-update-licencia');
+const inputLicencia = document.getElementById('licencia_vencimiento_input');
+const feedbackLicencia = document.getElementById('licencia-feedback');
+
+btnUpdateLicencia.addEventListener('click', async () => {
+    const nuevaFecha = inputLicencia.value;
+    const controlId = document.getElementById('control-id').value;
+
+    if (!nuevaFecha) {
+        alert('Por favor, selecciona una fecha válida');
+        return;
+    }
+
+    try {
+        btnUpdateLicencia.disabled = true;
+        btnUpdateLicencia.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Actualizando...';
+
+        const response = await fetch(`/api/registers-control/${controlId}/update-licencia`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ licencia_vencimiento: nuevaFecha })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            feedbackLicencia.className = 'alert alert-success mt-2 p-2 small';
+            feedbackLicencia.innerHTML = '✅ Fecha de licencia actualizada correctamente';
+            feedbackLicencia.style.display = 'block';
+        } else {
+            throw new Error(result.error || 'Error desconocido');
+        }
+    } catch (error) {
+        feedbackLicencia.className = 'alert alert-danger mt-2 p-2 small';
+        feedbackLicencia.innerHTML = '❌ Error: ' + error.message;
+        feedbackLicencia.style.display = 'block';
+    } finally {
+        btnUpdateLicencia.disabled = false;
+        btnUpdateLicencia.innerHTML = '<i class="fas fa-save me-2"></i> Actualizar Fecha Licencia';
+    }
+});
+</script>
 
 <script type="module" src="/js/doc_register.js"></script>

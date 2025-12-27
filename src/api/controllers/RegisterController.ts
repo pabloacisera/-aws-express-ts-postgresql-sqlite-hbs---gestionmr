@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { RegistersService } from "../services/RegistersService.js";
 import { dataControl } from "../../dto/control.dto.js";
+import prisma  from "../config/prisma.client.js";
 
 export class RegisterController {
   static async searchRegistries(req: Request, res: Response) {
@@ -218,4 +219,23 @@ export class RegisterController {
       });
     }
   }
+  
+  static async updateLicenciaDate(req: Request, res: Response) {
+  try {
+    const { controlId } = req.params;
+    const { licencia_vencimiento } = req.body;
+
+    await prisma.controlRegister.update({
+      where: { id: parseInt(controlId) },
+      data: { 
+        licencia_vencimiento: new Date(licencia_vencimiento),
+        updatedAt: new Date()
+      }
+    });
+
+    return res.status(200).json({ success: true });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
 }
+ }
