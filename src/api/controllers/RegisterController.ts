@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { RegistersService } from "../services/RegistersService.js";
 import { dataControl } from "../../dto/control.dto.js";
-import prisma  from "../config/prisma.client.js";
+import prisma  from "../../config/prisma.client.js";
 
 export class RegisterController {
   static async searchRegistries(req: Request, res: Response) {

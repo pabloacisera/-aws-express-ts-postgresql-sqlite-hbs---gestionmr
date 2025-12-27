@@ -111,8 +111,8 @@ r.delete("/registers-control/:controlId", (req, res) => {
   RegisterController.deleteRegistry(req, res);
 });
 
-r.patch("/api/registers-control/:controlId/update-licencia", (req, res) => {
-  registerController.updateLicenciaDate(req, res);
+r.patch("/registers-control/:controlId/update-licencia", (req, res) => {
+  RegisterController.updateLicenciaDate(req, res);
 });
 
 // En router.ts, cambiar todas las referencias de ActivationController a AuthController:
