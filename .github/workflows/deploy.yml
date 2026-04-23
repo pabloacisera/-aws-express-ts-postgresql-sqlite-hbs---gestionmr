@@ -1,4 +1,4 @@
-name: Deploy to AWS
+name: Deploy to Render
 
 on:
   push:
@@ -8,29 +8,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: 3.144.137.220
-          username: ec2-user
-          key: ${{ secrets.AWS_SSH_KEY }} # <-- Verifica que este nombre sea el que guardaste
-          script: |
-            cd /opt/gestionmr
-
-            # 1. Limpiar cualquier cambio local y forzar la descarga de GitHub
-            git fetch --all
-            git reset --hard origin/main
-
-            # 2. Instalar dependencias y generar cliente de base de datos (si usas Prisma)
-            npm install
-            npx prisma generate
-
-            # 3. COMPILAR (Esto es lo más importante si usas TypeScript)
-            # Esto actualiza la carpeta /dist que es la que realmente corre
-            npm run build
-
-            # 4. Reiniciar el servicio para que tome los cambios de /dist
-            sudo systemctl restart gestionmr.service
+      - name: Trigger Render Deploy
+        run: |
+          curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json"
