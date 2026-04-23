@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt
 COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci --omit=dev
-RUN npx prisma generate
+RUN npx prisma@6.19.0 generate
 COPY --from=builder /app/dist ./dist
 RUN mkdir -p /app/data /app/uploads
 EXPOSE 3000
