@@ -1,11 +1,12 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import { environment } from './environments.js';
 
-// Configurar Cloudinary con tus credenciales
+// Configurar Cloudinary con variables de entorno
 cloudinary.config({
-  cloud_name: 'dg6q6wbva',
-  api_key: '664676494491175',
-  api_secret: 'vk5QkTmZujyFG64nVLyFtHb_dsg',
+  cloud_name: environment.cloudinary_cloud_name,
+  api_key: environment.cloudinary_api_key,
+  api_secret: environment.cloudinary_api_secret,
   secure: true
 });
 
